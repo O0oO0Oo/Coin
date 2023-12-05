@@ -2,9 +2,9 @@ package org.coin.price.queue;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.coin.price.dto.PriceApiRequest;
 import org.coin.price.dto.CryptoCoin;
 import org.coin.price.dto.CryptoCoinComparator;
+import org.coin.price.dto.PriceApiRequest;
 import org.coin.price.event.PriceMessageProduceEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class PriceMessageBlockingQueue implements MessageQueue<PriceMessageProduceEvent, CryptoCoin> {
     private ConcurrentHashMap<String, PriorityBlockingQueue<CryptoCoin>> priceHashMapPriorityQueue = new ConcurrentHashMap<>();
     private ArrayList<String> coins = new ArrayList<>();
-    private final AtomicInteger index = new AtomicInteger();
+    private final AtomicInteger coinsIndex = new AtomicInteger(0);
     @Value("${price.api.initial-queue-size}")
     private int queueSize;
 
@@ -77,7 +77,17 @@ public class PriceMessageBlockingQueue implements MessageQueue<PriceMessageProdu
     }
 
     private String getCoinName() {
-        index.compareAndSet(coins.size(), 0);
-        return coins.get(index.getAndIncrement());
+        return coins.get(getCoinsIndex());
+    }
+
+    private int getCoinsIndex() {
+        return coinsIndex.getAndAccumulate(
+                1,
+                (current, update) -> {
+                    if (current < coins.size()) {
+                        return current + update;
+                    }
+                    return 0;
+                });
     }
 }
