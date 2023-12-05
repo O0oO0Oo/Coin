@@ -1,0 +1,10 @@
+# SPRING_PROFILES_ACTIVE=dev
+price:
+  api:
+    url: https://api.bithumb.com/public/ticker/ALL
+    rps: 4
+    max-failures: 10
+    initial-queue-size: 100
+
+server:
+  port: 8085
