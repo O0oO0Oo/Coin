@@ -1,13 +1,10 @@
 package org.coin.price.event;
 
-import lombok.Getter;
-
-public class AsyncSchedulingFailureCountEvent {
-    @Getter
-    private boolean isFailure;
-
-    public AsyncSchedulingFailureCountEvent(boolean flag) {
-        this.isFailure = flag;
+public record AsyncSchedulingFailureCountEvent(
+        boolean isFailure
+) {
+    public AsyncSchedulingFailureCountEvent(boolean isFailure) {
+        this.isFailure = isFailure;
     }
 
     public static AsyncSchedulingFailureCountEvent success() {
