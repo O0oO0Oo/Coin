@@ -33,7 +33,7 @@ class PriceApiRequestFailureEventListenerTest {
 
     @Test
     @DisplayName("event")
-    void should_handleEventThreadSafe_when_validEvent10000() throws InterruptedException {
+    void should_handleEventThreadSafe_when_validEvent1000000() throws InterruptedException {
         AtomicInteger result = (AtomicInteger) ReflectionTestUtils.getField(priceApiRequestFailureEventListener, "failureCount");
         List<AsyncSchedulingFailureCountEvent> eventList =
                 List.of(
@@ -56,7 +56,7 @@ class PriceApiRequestFailureEventListenerTest {
             }
 
             if (result.get() > maxFailures) {
-                fail("failureCount must be less than 0.");
+                fail("failureCount must be less than " + maxFailures + 1 + ".");
             }
         }
 
