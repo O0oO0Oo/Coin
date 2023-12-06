@@ -25,19 +25,21 @@ public class PriceApiRequestFailureEventListener {
     }
 
     private void setMaxFailures(boolean isFailure) {
-        if (!isFailure) {
-            failureCount.decrementAndGet();
-            failureCount.compareAndSet(-1, 0);
-        }
+        failureCount.accumulateAndGet(1, (current, update) -> {
+            if(!isFailure && current > 0){
+                return current - update;
+            }
 
-        if (failureCount.get() == maxFailures) {
-            log.error("Price request module reached max failures");
-            // TODO : 가격데이터를 불러올 수 없으므로 거래를 진행할 수 없어 거래 등록 서비스가 중지되게 해야함
-            return;
-        }
+            if (current == maxFailures) {
+                log.error("Price request module reached max failures");
+                return current;
+            }
 
-        if (isFailure) {
-            failureCount.incrementAndGet();
-        }
+            if(isFailure){
+                return current + update;
+            }
+
+            return current;
+        });
     }
 }
