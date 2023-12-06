@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-@Getter
 @Component
 public class CurrentPrice {
+    @Getter
     private Long timestamp = System.currentTimeMillis();
     private Map<String,PriceApiRequest.PriceData> currentPriceMap;
 

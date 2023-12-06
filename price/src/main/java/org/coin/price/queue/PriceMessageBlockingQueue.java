@@ -84,7 +84,7 @@ public class PriceMessageBlockingQueue implements MessageQueue<PriceMessageProdu
         return coinsIndex.getAndAccumulate(
                 1,
                 (current, update) -> {
-                    if (current < coins.size()) {
+                    if (current < coins.size() - 1) {
                         return current + update;
                     }
                     return 0;

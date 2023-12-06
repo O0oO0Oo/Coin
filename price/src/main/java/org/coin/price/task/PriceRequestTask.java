@@ -20,7 +20,7 @@ public class PriceRequestTask {
     private String API_URL;
 
     @Async("priceRequestTaskExecutor")
-    @Scheduled(fixedDelay = 250L, initialDelay = 1000L)
+    @Scheduled(fixedRate = 250L)
     public void requestScheduler() {
         PriceApiRequest priceApiRequest = apiRequest();
 
