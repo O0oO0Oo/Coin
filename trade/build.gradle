@@ -1,3 +1,12 @@
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.redisson:redisson:3.23.1'
 
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    implementation project(':price')
+}
+
+tasks.named('compileJava') {
+    inputs.files(tasks.named('processResources'))
 }
