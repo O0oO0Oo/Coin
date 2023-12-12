@@ -39,10 +39,6 @@ public class PriceApiRequest {
             "fluctate_rate_24H"})
     public static class PriceData {
         private String closing_price;
-
-        public Double getClosing_price() {
-            return Double.parseDouble(closing_price);
-        }
     }
 }
 

@@ -15,15 +15,15 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-class PriceMessageBlockingQueueTest {
+class PriceMessageWindowBlockingQueueTest {
     private ExecutorService produceExecutorService;
     private ExecutorService consumeExecutorService;
     private EasyRandom generator;
-    private PriceMessageBlockingQueue priceMessageBlockingQueue = new PriceMessageBlockingQueue();
+    private PriceMessageWindowBlockingQueue priceMessageBlockingQueue = new PriceMessageWindowBlockingQueue();
     private ConcurrentHashMap<String, PriorityBlockingQueue<CryptoCoin>> priceHashMapPriorityQueue = new ConcurrentHashMap<>();
     private ArrayList<String> coinName = new ArrayList<>();
 
@@ -32,81 +32,26 @@ class PriceMessageBlockingQueueTest {
         produceExecutorService = Executors.newScheduledThreadPool(100);
         consumeExecutorService = Executors.newScheduledThreadPool(100);
 
-
         coinName.addAll(List.of("BTC", "ETH", "ETC"));
         priceHashMapPriorityQueue.put(coinName.get(0), new PriorityBlockingQueue<>(100, new CryptoCoinComparator()));
         priceHashMapPriorityQueue.put(coinName.get(1), new PriorityBlockingQueue<>(100, new CryptoCoinComparator()));
         priceHashMapPriorityQueue.put(coinName.get(2), new PriorityBlockingQueue<>(100, new CryptoCoinComparator()));
         ReflectionTestUtils.setField(priceMessageBlockingQueue, "priceHashMapPriorityQueue", priceHashMapPriorityQueue);
         ReflectionTestUtils.setField(priceMessageBlockingQueue, "coins", coinName);
+        ReflectionTestUtils.setField(priceMessageBlockingQueue,"windowSize", 5);
+    }
 
-        // 테스트를 위한 EasyRandom 설정
+    @Test
+    @DisplayName("consume - success - 5 window-size, 4 types price")
+    void should_consumeThreadSafe_when_validRequest10000WindowSize5PriceType4() throws InterruptedException {
+        // given
         EasyRandomParameters parameters = new EasyRandomParameters()
-                .randomize(FieldPredicates.named("closing_price"), () -> String.valueOf(generator.nextDouble(10, 10000)))
+                .randomize(FieldPredicates.named("closing_price"), () -> String.valueOf(generator.nextInt(10, 14)))
                 .randomize(String.class, () -> coinName.get(generator.nextInt(0, 3)))
                 .randomize(FieldPredicates.named("timestamp"), System::currentTimeMillis);
+
         generator = new EasyRandom(parameters);
-    }
 
-    @Test
-    @DisplayName("produce - success")
-    void should_produceThreadSafe_when_validRequest10000() throws InterruptedException {
-        int size = 0;
-        for (int i = 0; i < 10000; i++) {
-            // given
-            PriceApiRequest request = generator.nextObject(PriceApiRequest.class);
-            PriceMessageProduceEvent event = PriceMessageProduceEvent.of(request);
-
-            size += event.priceDataMap().keySet().size();
-
-            // when
-            produceExecutorService.submit(() -> {
-                try {
-                    // API 요청 받아오는 시간
-                    Thread.sleep(generator.nextLong(50, 700));
-                    priceMessageBlockingQueue.produce(event);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-
-        produceExecutorService.shutdown();
-        assertTrue(produceExecutorService.awaitTermination(60, TimeUnit.SECONDS), "timeout.");
-
-        // then
-        int finalSize = size;
-        assertAll(
-                "PriceMessageBlockingQueue produce test",
-                () -> assertEquals(
-                        finalSize,
-                        priceHashMapPriorityQueue.get(coinName.get(0)).size() +
-                                priceHashMapPriorityQueue.get(coinName.get(1)).size() +
-                                priceHashMapPriorityQueue.get(coinName.get(2)).size(),
-                        "Non Thread-safe"
-                ),
-                () -> assertEquals(
-                        finalSize/3,
-                        priceHashMapPriorityQueue.get(coinName.get(0)).size(),
-                        coinName.get(0) + " PriorityBlockingQueue  must be " + finalSize/3
-                ),
-                () -> assertEquals(
-                        finalSize/3,
-                        priceHashMapPriorityQueue.get(coinName.get(1)).size(),
-                        coinName.get(1) + " PriorityBlockingQueue must be " + finalSize/3
-                ),
-                () -> assertEquals(
-                        finalSize/3,
-                        priceHashMapPriorityQueue.get(coinName.get(2)).size(),
-                        coinName.get(2) + " PriorityBlockingQueue must be " + finalSize/3
-                )
-        );
-    }
-
-    @Test
-    @DisplayName("consume - success")
-    void should_consumeThreadSafe_when_validRequest10000() throws InterruptedException, ExecutionException {
-        // given
         int size = 0;
         for (int i = 0; i < 10000; i++) {
             PriceApiRequest request = generator.nextObject(PriceApiRequest.class);
@@ -123,10 +68,18 @@ class PriceMessageBlockingQueueTest {
         assertTrue(produceExecutorService.awaitTermination(60, TimeUnit.SECONDS), "timeout.");
         System.out.println("produce success, size : " + size);
 
+        AtomicInteger actualSize = new AtomicInteger();
+
         // when
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < 20; i++) {
             consumeExecutorService.submit(() -> {
-                priceMessageBlockingQueue.consume();
+                while (true) {
+                    List<CryptoCoin> consume = priceMessageBlockingQueue.consume();
+                    actualSize.addAndGet(consume.size());
+                    if (consume.isEmpty()) {
+                        break;
+                    }
+                }
             });
         }
 
@@ -135,7 +88,12 @@ class PriceMessageBlockingQueueTest {
 
         // then
         assertAll(
-                "PriceMessageBlockingQueue consume test",
+                "PriceMessageWindowBlockingQueue consume test",
+                () -> assertEquals(
+                        12,
+                        actualSize.get(),
+                        "size diff"
+                ),
                 () -> assertEquals(
                         0,
                         priceHashMapPriorityQueue.get(coinName.get(0)).size(),
