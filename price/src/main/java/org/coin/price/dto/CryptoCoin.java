@@ -7,11 +7,11 @@ import lombok.Getter;
 @Getter
 public class CryptoCoin  {
     private String coinName;
-    private Double price;
+    private String price;
     private Long timestamp;
 
     @Builder
-    public CryptoCoin(String coinName, Double price, Long timestamp) {
+    public CryptoCoin(String coinName, String price, Long timestamp) {
         this.coinName = coinName;
         this.price = price;
         this.timestamp = timestamp;
