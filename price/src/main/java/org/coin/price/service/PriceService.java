@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class PriceService {
     private final CurrentPrice currentPrice;
 
-    public Double findPrice(String coinName) {
+    public String findPrice(String coinName) {
         return currentPrice.getCurrentPrice(coinName);
     }
 }
