@@ -5,6 +5,7 @@ price:
     rps: 4
     max-failures: 10
     initial-queue-size: 100
+    price-window-size: 5
 
 server:
   port: 8085
