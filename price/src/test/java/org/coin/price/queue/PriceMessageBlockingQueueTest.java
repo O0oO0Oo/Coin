@@ -88,17 +88,17 @@ class PriceMessageBlockingQueueTest {
                 () -> assertEquals(
                         finalSize/3,
                         priceHashMapPriorityQueue.get(coinName.get(0)).size(),
-                        "Array[0] must be " + finalSize/3
+                        coinName.get(0) + " PriorityBlockingQueue  must be " + finalSize/3
                 ),
                 () -> assertEquals(
                         finalSize/3,
                         priceHashMapPriorityQueue.get(coinName.get(1)).size(),
-                        "Array[1] must be " + finalSize/3
+                        coinName.get(1) + " PriorityBlockingQueue must be " + finalSize/3
                 ),
                 () -> assertEquals(
                         finalSize/3,
                         priceHashMapPriorityQueue.get(coinName.get(2)).size(),
-                        "Array[2] must be " + finalSize/3
+                        coinName.get(2) + " PriorityBlockingQueue must be " + finalSize/3
                 )
         );
     }
@@ -131,7 +131,7 @@ class PriceMessageBlockingQueueTest {
         }
 
         consumeExecutorService.shutdown();
-        assertTrue(produceExecutorService.awaitTermination(60, TimeUnit.SECONDS), "timeout.");
+        assertTrue(consumeExecutorService.awaitTermination(60, TimeUnit.SECONDS), "timeout.");
 
         // then
         assertAll(
@@ -139,17 +139,17 @@ class PriceMessageBlockingQueueTest {
                 () -> assertEquals(
                         0,
                         priceHashMapPriorityQueue.get(coinName.get(0)).size(),
-                        "Array[0] must be 0"
+                        coinName.get(0) + " PriorityBlockingQueue must be 0"
                 ),
                 () -> assertEquals(
                         0,
                         priceHashMapPriorityQueue.get(coinName.get(1)).size(),
-                        "Array[1] must be 0"
+                        coinName.get(1) + " PriorityBlockingQueue must be 0"
                 ),
                 () -> assertEquals(
                         0,
                         priceHashMapPriorityQueue.get(coinName.get(2)).size(),
-                        "Array[2] must be 0"
+                        coinName.get(2) + " PriorityBlockingQueue must be 0"
                 )
         );
     }
