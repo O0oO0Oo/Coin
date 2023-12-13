@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,6 +30,7 @@ public class PriceMessageWindowBlockingQueue implements MessageQueue<PriceMessag
     private int queueSize;
     @Value("${price.api.price-window-size}")
     private int windowSize;
+    private final Map<String, ReentrantLock> reentrantLockMap = new HashMap<>();
 
     @PostConstruct
     void init() {
@@ -42,7 +44,10 @@ public class PriceMessageWindowBlockingQueue implements MessageQueue<PriceMessag
             log.error("PriceMessageBlockingQueue PostConstruct Failed. : {}", e.getMessage());
         }
 
-        coins.forEach(coinName -> priceHashMapPriorityQueue.put(coinName, new PriorityBlockingQueue<>(queueSize, new CryptoCoinComparator())));
+        coins.forEach(coinName -> {
+            priceHashMapPriorityQueue.put(coinName, new PriorityBlockingQueue<>(queueSize, new CryptoCoinComparator()));
+            reentrantLockMap.put(coinName, new ReentrantLock());
+        });
     }
 
     @Override
@@ -94,16 +99,21 @@ public class PriceMessageWindowBlockingQueue implements MessageQueue<PriceMessag
     }
 
     private List<CryptoCoin> tumblingWindow(String name) {
-        PriorityBlockingQueue<CryptoCoin> blockingQueue = priceHashMapPriorityQueue.get(name);
-        synchronized (blockingQueue) {
-            Map<String, CryptoCoin> map = new HashMap<>(windowSize + 1, 1.0f);
+        if (reentrantLockMap.get(name).tryLock()) {
+            try {
+                PriorityBlockingQueue<CryptoCoin> coinBlockingQueue = priceHashMapPriorityQueue.get(name);
+                Map<String, CryptoCoin> windowMap = new HashMap<>(windowSize + 1, 1.0f);
 
-            while (map.keySet().size() < windowSize && blockingQueue.peek() != null) {
-                CryptoCoin coin = blockingQueue.poll();
-                map.put(coin.getPrice(), coin);
+                while (windowMap.keySet().size() < windowSize && coinBlockingQueue.peek() != null) {
+                    CryptoCoin coin = coinBlockingQueue.poll();
+                    windowMap.put(coin.getPrice(), coin);
+                }
+                return windowMap.values().stream().toList();
+            } finally {
+                reentrantLockMap.get(name).unlock();
             }
-
-            return map.values().stream().toList();
+        } else {
+            return Collections.emptyList();
         }
     }
 }
