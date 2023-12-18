@@ -1,0 +1,31 @@
+# SPRING_PROFILES_ACTIVE=dev
+price:
+  api:
+    url: https://api.bithumb.com/public/ticker/ALL
+    rps: 4
+    max-failures: 10
+    initial-queue-size: 100
+    price-window-size: 5
+
+user:
+  api:
+    minimum-order-price: 1000.0
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/crypto
+    username: uno
+    password:
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        format_sql: true
