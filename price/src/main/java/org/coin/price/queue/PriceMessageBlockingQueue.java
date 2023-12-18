@@ -7,7 +7,6 @@ import org.coin.price.dto.CryptoCoinComparator;
 import org.coin.price.dto.PriceApiRequest;
 import org.coin.price.event.PriceMessageProduceEvent;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -21,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
 public class PriceMessageBlockingQueue implements MessageQueue<PriceMessageProduceEvent, CryptoCoin> {
     private ConcurrentHashMap<String, PriorityBlockingQueue<CryptoCoin>> priceHashMapPriorityQueue = new ConcurrentHashMap<>();
     private ArrayList<String> coins = new ArrayList<>();
