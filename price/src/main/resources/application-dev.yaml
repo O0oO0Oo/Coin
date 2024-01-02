@@ -1,6 +1,6 @@
 # SPRING_PROFILES_ACTIVE=dev
-price:
-  api:
+module:
+  price:
     url: https://api.bithumb.com/public/ticker/ALL
     rps: 4
     max-failures: 10

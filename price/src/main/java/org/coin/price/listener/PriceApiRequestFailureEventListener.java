@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 public class PriceApiRequestFailureEventListener {
-    @Value("${price.api.max-failures}")
+    @Value("${module.price.max-failures}")
     private int maxFailures;
     private final AtomicInteger failureCount = new AtomicInteger();
 

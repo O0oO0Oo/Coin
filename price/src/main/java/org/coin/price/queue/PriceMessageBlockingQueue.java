@@ -24,7 +24,7 @@ public class PriceMessageBlockingQueue implements MessageQueue<PriceMessageProdu
     private ConcurrentHashMap<String, PriorityBlockingQueue<CryptoCoin>> priceHashMapPriorityQueue = new ConcurrentHashMap<>();
     private ArrayList<String> coins = new ArrayList<>();
     private final AtomicInteger coinsIndex = new AtomicInteger(0);
-    @Value("${price.api.initial-queue-size}")
+    @Value("${module.price.initial-queue-size}")
     private int queueSize;
 
     @PostConstruct

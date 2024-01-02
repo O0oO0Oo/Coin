@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 public class PriceRequestTask {
     private final ApplicationEventPublisher eventPublisher;
     private final RestTemplate restTemplate = new RestTemplate();
-    @Value("${price.api.url}")
+    @Value("${module.price.url}")
     private String API_URL;
 
     @Async("priceRequestTaskExecutor")
