@@ -20,7 +20,7 @@ import java.util.concurrent.Executor;
 @Configuration
 @RequiredArgsConstructor
 public class AsyncSchedulingConfiguration implements AsyncConfigurer {
-    @Value("${price.api.rps}")
+    @Value("${module.price.rps}")
     private int rps;
     private final AsyncSchedulingExceptionHandler asyncSchedulingExceptionHandler;
 
@@ -35,7 +35,7 @@ public class AsyncSchedulingConfiguration implements AsyncConfigurer {
         log.debug("Creating Async Task Executor");
         ThreadPoolTaskScheduler executor = new ThreadPoolTaskScheduler();
         executor.setPoolSize(rps);
-        executor.setThreadNamePrefix("price-task-");
+        executor.setThreadNamePrefix("pool-price-thread-");
         executor.initialize();
         return executor;
     }

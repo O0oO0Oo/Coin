@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 public class TotalOrderPriceValidator implements ConstraintValidator<ValidTotalOrderPrice, AddOrderRequest> {
 
-    @Value("${user.api.minimum-order-price}")
+    @Value("${module.user.minimum-order-price}")
     private Double minimumOrderPrice;
 
     @Override

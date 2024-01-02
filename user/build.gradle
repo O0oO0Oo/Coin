@@ -3,5 +3,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
+    implementation project(":trade")
     implementation project(":price")
 }

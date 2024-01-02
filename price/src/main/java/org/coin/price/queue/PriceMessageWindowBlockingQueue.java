@@ -26,9 +26,9 @@ public class PriceMessageWindowBlockingQueue implements MessageQueue<PriceMessag
     private ConcurrentHashMap<String, PriorityBlockingQueue<CryptoCoin>> priceHashMapPriorityQueue = new ConcurrentHashMap<>();
     private ArrayList<String> coins = new ArrayList<>();
     private final AtomicInteger coinsIndex = new AtomicInteger(0);
-    @Value("${price.api.initial-queue-size}")
+    @Value("${module.price.initial-queue-size}")
     private int queueSize;
-    @Value("${price.api.price-window-size}")
+    @Value("${module.price.price-window-size}")
     private int windowSize;
     private final Map<String, ReentrantLock> reentrantLockMap = new HashMap<>();
 
@@ -102,7 +102,7 @@ public class PriceMessageWindowBlockingQueue implements MessageQueue<PriceMessag
         if (reentrantLockMap.get(name).tryLock()) {
             try {
                 PriorityBlockingQueue<CryptoCoin> coinBlockingQueue = priceHashMapPriorityQueue.get(name);
-                Map<String, CryptoCoin> windowMap = new HashMap<>(windowSize + 1, 1.0f);
+                Map<Double, CryptoCoin> windowMap = new HashMap<>(windowSize + 1, 1.0f);
 
                 while (windowMap.keySet().size() < windowSize && coinBlockingQueue.peek() != null) {
                     CryptoCoin coin = coinBlockingQueue.poll();

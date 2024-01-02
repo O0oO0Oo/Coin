@@ -19,7 +19,7 @@ public class CurrentPrice {
         }
     }
 
-    public String getCurrentPrice(String coinName) {
+    public double getCurrentPrice(String coinName) {
         return this.currentPriceMap.get(coinName).getClosing_price();
     }
 }
