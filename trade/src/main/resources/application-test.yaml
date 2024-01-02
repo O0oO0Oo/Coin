@@ -1,4 +1,4 @@
-# SPRING_PROFILES_ACTIVE=dev
+# @ActiveProfiles("test")
 module:
   price:
     url: https://api.bithumb.com/public/ticker/ALL

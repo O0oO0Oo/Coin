@@ -1,6 +1,5 @@
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
+    implementation 'org.redisson:redisson-spring-boot-starter:3.25.2'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     implementation project(':price')

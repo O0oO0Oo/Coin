@@ -1,0 +1,54 @@
+package org.coin.trade.config;
+
+import lombok.Data;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.codec.JsonJacksonCodec;
+import org.redisson.config.Config;
+import org.redisson.config.ReadMode;
+import org.redisson.connection.balancer.RoundRobinLoadBalancer;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+
+/**
+ * TODO : sentinel
+ */
+@Data
+@Configuration
+@ConfigurationProperties(prefix = "redis")
+@EnableConfigurationProperties
+public class RedissonWriteToMasterReadFromReplicaConfiguration {
+    private RedisInstance master;
+    private List<RedisInstance> slaves;
+
+    @Bean
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        config.setCodec(JsonJacksonCodec.INSTANCE);
+        config.useMasterSlaveServers()
+                .setMasterAddress(master.toString())
+                .setReadMode(ReadMode.SLAVE)
+                .setLoadBalancer(new RoundRobinLoadBalancer());
+
+        slaves
+                .forEach(slave -> config.useMasterSlaveServers()
+                        .addSlaveAddress(slave.toString()));
+
+        return Redisson.create(config);
+    }
+
+    @Data
+    private static class RedisInstance {
+        private String host;
+        private int port;
+
+        @Override
+        public String toString() {
+            return "redis://" + host + ":" + port;
+        }
+    }
+}
