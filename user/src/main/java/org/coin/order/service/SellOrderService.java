@@ -12,6 +12,8 @@ import org.coin.order.dto.response.FindOrderResponse;
 import org.coin.order.entity.SellOrder;
 import org.coin.order.repository.SellOrderRepository;
 import org.coin.price.service.PriceService;
+import org.coin.trade.dto.service.RegisterOrderDto;
+import org.coin.trade.service.TradeService;
 import org.coin.user.entity.User;
 import org.coin.user.repository.UserRepository;
 import org.coin.wallet.entity.Wallet;
@@ -30,8 +32,9 @@ public class SellOrderService {
     private final WalletRepository walletRepository;
     private final CryptoRepository cryptoRepository;
     private final PriceService priceService;
+    private final TradeService tradeService;
 
-    @Value("${user.api.minimum-order-price}")
+    @Value("${module.user.minimum-order-price}")
     private Double minimumOrderPrice;
     
     /**
@@ -41,6 +44,7 @@ public class SellOrderService {
      * 3. 지갑에서 화폐 인출
      * 4. TODO : Trade 모듈 Redis 에 주문 올리기
      * 5. SellOrder 엔티티 생성, 저장
+     * 6. Trade 모듈 Redis 에 주문 올리기
      * @param userId
      * @param request
      * @return
@@ -61,9 +65,25 @@ public class SellOrderService {
                 .quantity(request.quantity())
                 .price(request.price())
                 .build();
-
         SellOrder saveOrder = sellOrderRepository.save(sellOrder);
+
+        // redis 에 등록
+        tradeService.registerOrder(
+                registerOrderString(sellOrder, wallet, user, crypto)
+        );
         return AddSellOrderResponse.of(saveOrder, crypto.getName(), savedWallet.getQuantity());
+    }
+
+    private RegisterOrderDto registerOrderString(SellOrder sellOrder, Wallet wallet, User user, Crypto crypto) {
+        return RegisterOrderDto.of(
+                "sell",
+                crypto.getName(),
+                sellOrder.getPrice(),
+                sellOrder.getId(),
+                wallet.getId(),
+                user.getId(),
+                sellOrder.getQuantity()
+        );
     }
 
     /**
@@ -165,26 +185,27 @@ public class SellOrderService {
      * 1. 유저
      * 2. 판매 주문 조회
      * 3. 지갑 조회
-     * 5. 판매 주문이 삭제 가능한지 조회
-     * 6. 환불
-     * 7. TODO : Trade 모듈의 Redis 에서도 삭제해야함
+     * 4. 판매 주문이 삭제 가능한지 조회
+     * 5. 환불
+     * 6. TODO : Trade 모듈의 Redis 에서도 삭제해야함
      * 8. 판매 주문 엔티티 취소됨 업데이트, 저장
      * @param userId
      * @param sellOrderId
      */
     @Transactional
     public void cancelAndRefundSellOrderTransaction(Long userId, Long sellOrderId) {
-        User user = findUserByIdOrElseThrow(userId);
-        SellOrder sellOrder = findSellOrderByIdOrElseThrow(sellOrderId);
-        Wallet wallet = findWalletByUserIdAndCryptoIdOrElseThrow(user, sellOrder.getCrypto());
+        User user = findUserByIdOrElseThrow(userId); // 1
+        SellOrder sellOrder = findSellOrderByIdOrElseThrow(sellOrderId); // 2
+        Wallet wallet = findWalletByUserIdAndCryptoIdOrElseThrow(user, sellOrder.getCrypto()); // 3
 
-        checkSellOrderCanCanceledOrElseThrow(sellOrder);
+        checkSellOrderCanCanceledOrElseThrow(sellOrder); // 4
         refundCrypto(wallet, sellOrder);
 
-        // 거래 모듈 삭제기능 추가
-        sellOrder.setCanceled(true);
+        sellOrder.setCanceled(true); // 5
 
-        walletRepository.save(wallet);
+        // 6 redis 에서 삭제
+        
+        walletRepository.save(wallet); // 6
         sellOrderRepository.save(sellOrder);
     }
 

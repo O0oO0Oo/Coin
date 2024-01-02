@@ -13,6 +13,8 @@ import org.coin.order.dto.response.FindOrderResponse;
 import org.coin.order.entity.BuyOrder;
 import org.coin.order.repository.BuyOrderRepository;
 import org.coin.price.service.PriceService;
+import org.coin.trade.dto.service.RegisterOrderDto;
+import org.coin.trade.service.TradeService;
 import org.coin.user.entity.User;
 import org.coin.user.repository.UserRepository;
 import org.coin.wallet.entity.Wallet;
@@ -31,37 +33,73 @@ public class BuyOrderService {
     private final CryptoRepository cryptoRepository;
     private final WalletRepository walletRepository;
     private final PriceService priceService;
-    @Value("${user.api.minimum-order-price}")
+    private final TradeService tradeService;
+
+    @Value("${module.user.minimum-order-price}")
     private Double minimumOrderPrice;
     /**
      * 구매 주문 추가
      *  1. 유저 확인
      *  2. 거래 가능 코인인지 확인
      *  3. 유저 돈 인출, 저장
-     *  4. TODO : Trade 모듈 Redis 에 주문 올리기
-     *  5. BuyOrder 엔티티 생성, 저장
+     *  4. BuyOrder 엔티티 생성, 저장
+     *  5. 지갑 찾기, 없다면 생성
+     *  6. TODO : Trade 모듈 Redis 에 주문 올리기
      * @param userId
      * @param request
      * @return
      */
     @Transactional
     public AddBuyOrderResponse executeBuyOrderTransaction(Long userId, AddOrderRequest request) {
-        User user = findUserByIdOrElseThrow(userId);
-        Crypto crypto = findCryptoByIdOrElseThrow(request.cryptoId());
+        User user = findUserByIdOrElseThrow(userId); // 1
 
-        withdrawMoneyOrElseThrow(user, request.price(), request.quantity());
+        Crypto crypto = findCryptoByIdOrElseThrow(request.cryptoId()); // 2
+
+        withdrawMoneyOrElseThrow(user, request.price(), request.quantity()); // 3
         User updatedUser = userRepository.save(user);
 
-        // TODO : Trade module
-
-        BuyOrder order = BuyOrder.builder()
+        BuyOrder order = BuyOrder.builder() // 4
                 .user(user)
                 .crypto(crypto)
                 .quantity(request.quantity())
                 .price(request.price())
                 .build();
         BuyOrder savedOrder = buyOrderRepository.save(order);
+
+        Optional<Wallet> walletOpt = findWalletByUserIdAndCryptoId(user, crypto); // 5
+        Wallet wallet;
+        if (walletOpt.isEmpty()) {
+            Wallet build = Wallet.builder()
+                    .user(user)
+                    .crypto(crypto)
+                    .quantity(0.)
+                    .build();
+            wallet = walletRepository.save(build);
+        }
+        else {
+            wallet = walletOpt.get();
+        }
+
+        tradeService.registerOrder( // 6 redis 에 등록
+                registerOrderString(savedOrder, wallet, user, crypto)
+        );
         return AddBuyOrderResponse.of(savedOrder, crypto.getName(), updatedUser.getMoney());
+    }
+
+    private Optional<Wallet> findWalletByUserIdAndCryptoId(User user, Crypto crypto) {
+       return walletRepository.findByUserIdAndCryptoId(user.getId(), crypto.getId());
+    }
+
+    private RegisterOrderDto registerOrderString(BuyOrder buyOrder, Wallet wallet, User user, Crypto crypto) {
+        return RegisterOrderDto.of(
+                "buy",
+                crypto.getName(),
+                buyOrder.getPrice(),
+                buyOrder.getId(),
+                wallet.getId(),
+                user.getId(),
+                buyOrder.getQuantity()
+        );
     }
 
     /**
@@ -192,6 +230,8 @@ public class BuyOrderService {
 
         // 거래 모듈 삭제기능 추가
         buyOrder.setCanceled(true);
+        
+        // redis 에서 삭제
 
         userRepository.save(user);
         buyOrderRepository.save(buyOrder);
