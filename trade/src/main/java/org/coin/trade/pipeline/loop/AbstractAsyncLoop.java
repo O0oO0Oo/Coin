@@ -9,15 +9,17 @@ import java.util.function.Supplier;
 
 /**
  * 비동기 루프 추상 클래스 입니다.
- * <p></p>
- * 1. processResult(I result) 결과 처리 메서드
  * <p>
- * 2. doConcurrencyLevelControl() 다른 스레드와 동기화 조정이 필요할 때 동작을 정의하는 메서드
+ * 1. O processResult(I result) 결과 처리 메서드
+ * <p>
+ * 2. doConcurrencyLevelControl(O result) 다른 스레드와 동기화 조정이 필요할 때 동작을 정의하는 메서드
  * <p>
  * 3. doHandlerError(Throwable throwable) 예외 발생 처리 메서드
+ * 4. shouldStopAsyncLoop() 예외 발생했을때 멈춰야하는 조건을 정의
  * <p>
- * 세 가지를 구현해야 합니다.
- * @param <I> Supplier 에서 반환하는 데이터 타입
+ * 네 가지를 구현해야 합니다.
+ * @param <I> Supplier 에서 반환하는 데이터의 타입
+ * @param <O> 이전의 결과를 바탕으로 동시성을 조정할 데이터의 타입
  */
 @Slf4j
 public abstract class AbstractAsyncLoop<I, O> implements AsyncLoop {
