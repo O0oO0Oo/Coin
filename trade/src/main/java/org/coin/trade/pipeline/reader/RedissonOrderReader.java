@@ -7,9 +7,9 @@ import org.coin.price.dto.CryptoCoin;
 import org.coin.price.queue.PriceMessageWindowBlockingQueue;
 import org.coin.trade.dto.pipeline.reader.OrderSortedSetDto;
 import org.coin.trade.dto.pipeline.reader.ReadOrderDto;
+import org.coin.trade.redis.CustomOrderLock;
 import org.redisson.api.BatchOptions;
 import org.redisson.api.RBatch;
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.RedisException;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -71,9 +71,9 @@ public class RedissonOrderReader implements ItemReader<ReadOrderDto> {
      * lock 은 writer 에서 처리 후 해제
      */
     private ReadOrderDto readOrders(List<CryptoCoin> prices) {
-        String coinName = prices.get(0).getCoinName();
-        RLock lock = redissonClient.getLock("lock:" + coinName);
-        if (lock.tryLock()) {
+        CustomOrderLock lock = new CustomOrderLock(redissonClient, prices);
+
+        if (lock.tryLock(6000)) {
             log.info(lock.getName() + " is locked.");
             return executeBatchOperation(lock, prices);
         }
@@ -81,7 +81,7 @@ public class RedissonOrderReader implements ItemReader<ReadOrderDto> {
         return null;
     }
 
-    private ReadOrderDto executeBatchOperation(RLock lock, List<CryptoCoin> prices) {
+    private ReadOrderDto executeBatchOperation(CustomOrderLock lock, List<CryptoCoin> prices) {
         RBatch batch = redissonClient.createBatch(batchOptions);
         List<CompletableFuture<OrderSortedSetDto>> orderFutures = createOrderFutures(prices, batch);
 

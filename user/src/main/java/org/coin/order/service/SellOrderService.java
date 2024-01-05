@@ -72,12 +72,12 @@ public class SellOrderService {
 
         // redis 에 등록
         tradeService.registerOrder(
-                registerOrderString(sellOrder, wallet, user, crypto)
+                createOrderDto(sellOrder, wallet, user, crypto)
         );
         return AddSellOrderResponse.of(saveOrder, crypto.getName(), savedWallet.getQuantity());
     }
 
-    private OrderDto registerOrderString(SellOrder sellOrder, Wallet wallet, User user, Crypto crypto) {
+    private OrderDto createOrderDto(SellOrder sellOrder, Wallet wallet, User user, Crypto crypto) {
         return OrderDto.of(
                 "sell",
                 crypto.getName(),
@@ -195,7 +195,7 @@ public class SellOrderService {
      * 3. 지갑 조회
      * 4. 판매 주문이 삭제 가능한지 조회
      * 5. 환불
-     * 6. TODO : Trade 모듈의 Redis 에서도 삭제해야함
+     * 6. redis 삭제
      * 8. 판매 주문 엔티티 취소됨 업데이트, 저장
      * @param userId
      * @param sellOrderId
@@ -211,15 +211,9 @@ public class SellOrderService {
 
         sellOrder.setCanceled(true); // 5
 
-        /**
-         * 6. 레디스 모듈 삭제
-         * order:{type}:{coin name}, {orderId}:{walletId}:{userId}:{quantity}
-         * 
-         * 비동기로 삭제했을 때 1이 나오면 저장, 0이 나오면 롤백
-         */
-        
+        OrderDto orderDto = createOrderDto(sellOrder, wallet, user, sellOrder.getCrypto());
+        deregisterOrderOrElseThrow(orderDto);
 
-        
         walletRepository.save(wallet); // 6
         sellOrderRepository.save(sellOrder);
     }
@@ -246,5 +240,12 @@ public class SellOrderService {
     private void refundCrypto(Wallet wallet, SellOrder sellOrder) {
         Double quantity = sellOrder.getQuantity();
         wallet.increaseQuantity(quantity);
+    }
+
+    private void deregisterOrderOrElseThrow(OrderDto orderDto) {
+        boolean result = tradeService.deregisterOrder(orderDto);
+        if (!result) {
+            throw new CustomException(ErrorCode.ORDER_CANT_BE_CANCELED);
+        }
     }
 }

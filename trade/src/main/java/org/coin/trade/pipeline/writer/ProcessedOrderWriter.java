@@ -7,6 +7,7 @@ import org.coin.trade.dto.pipeline.reader.ReadOrderDto;
 import org.coin.trade.dto.pipeline.writer.ProcessedOrderDto;
 import org.coin.trade.dto.pipeline.writer.WriteOrderDto;
 import org.coin.trade.queue.ProcessedOrderMessageBlockingQueue;
+import org.coin.trade.redis.CustomOrderLock;
 import org.redisson.api.BatchOptions;
 import org.redisson.api.RBatch;
 import org.redisson.api.RLock;
@@ -29,7 +30,7 @@ public class ProcessedOrderWriter implements ItemWriter<ReadOrderDto>{
     private final BatchOptions batchOptions = BatchOptions.defaults()
             .retryInterval(1, TimeUnit.SECONDS);
 
-    public Supplier<RLock> writeSupplier() {
+    public Supplier<CustomOrderLock> writeSupplier() {
         return () -> {
             ReadOrderDto consume = null;
 

@@ -20,14 +20,12 @@ import org.coin.user.repository.UserRepository;
 import org.coin.wallet.entity.Wallet;
 import org.coin.wallet.repository.WalletRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -86,7 +84,7 @@ public class BuyOrderService {
         }
 
         tradeService.registerOrder( // 6 redis 에 등록
-                registerOrderString(savedOrder, wallet, user, crypto)
+                createOrderDto(savedOrder, wallet, user, crypto)
         );
         return AddBuyOrderResponse.of(savedOrder, crypto.getName(), updatedUser.getMoney());
     }
@@ -95,7 +93,7 @@ public class BuyOrderService {
        return walletRepository.findByUserIdAndCryptoId(user.getId(), crypto.getId());
     }
 
-    private OrderDto registerOrderString(BuyOrder buyOrder, Wallet wallet, User user, Crypto crypto) {
+    private OrderDto createOrderDto(BuyOrder buyOrder, Wallet wallet, User user, Crypto crypto) {
         return OrderDto.of(
                 "buy",
                 crypto.getName(),
@@ -227,7 +225,7 @@ public class BuyOrderService {
      * 2. 구매 주문 조회
      * 3. 구매 주문이 삭제 가능한지 조회
      * 4. 환불
-     * 5. TODO : 거래 모듈의 Redis 에서도 삭제해야함
+     * 5. redis 삭제
      * 6. 구매 주문 엔티티 취소됨 업데이트, 저장
      */
     @Transactional
@@ -238,11 +236,12 @@ public class BuyOrderService {
         checkBuyOrderCanCanceledOrElseThrow(buyOrder);
         refundMoney(user, buyOrder);
 
-        // 거래 모듈 삭제기능 추가
         buyOrder.setCanceled(true);
         
         // redis 에서 삭제
-        //
+        Wallet wallet = findWalletByUserIdAndCryptoIdOrElseThrow(userId, buyOrder.getCrypto());
+        OrderDto orderDto = createOrderDto(buyOrder, wallet, user, buyOrder.getCrypto());
+        deregisterOrderOrElseThrow(orderDto);
 
         userRepository.save(user);
         buyOrderRepository.save(buyOrder);
@@ -281,5 +280,19 @@ public class BuyOrderService {
         Double price = buyOrder.getPrice();
         Double quantity = buyOrder.getQuantity();
         user.increaseMoney(price * quantity);
+    }
+
+    private Wallet findWalletByUserIdAndCryptoIdOrElseThrow(Long userId, Crypto crypto) {
+        return walletRepository.findByUserIdAndCryptoId(userId, crypto.getId())
+                .orElseThrow(
+                        () -> new CustomException(ErrorCode.WALLET_NOT_FOUND)
+                );
+    }
+
+    private void deregisterOrderOrElseThrow(OrderDto orderDto) {
+        boolean result = tradeService.deregisterOrder(orderDto);
+        if (!result) {
+            throw new CustomException(ErrorCode.ORDER_CANT_BE_CANCELED);
+        }
     }
 }
