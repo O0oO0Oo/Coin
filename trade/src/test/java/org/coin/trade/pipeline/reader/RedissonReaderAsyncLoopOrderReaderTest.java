@@ -2,7 +2,7 @@ package org.coin.trade.pipeline.reader;
 
 import org.coin.price.queue.PriceMessageWindowBlockingQueue;
 import org.coin.trade.config.RedissonWriteToMasterReadFromReplicaConfiguration;
-import org.coin.trade.dto.service.RegisterOrderDto;
+import org.coin.trade.dto.service.OrderDto;
 import org.coin.trade.service.TradeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,16 +44,17 @@ class RedissonReaderAsyncLoopOrderReaderTest {
     void registerTestOrder() {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         for (int i = 0; i < 10000; i++) {
-            RegisterOrderDto orderDto = RegisterOrderDto.of(
+            OrderDto orderDto = OrderDto.of(
                     "buy",
                     "btc",
                     priceList.get(random.nextInt(0, priceList.size())),
                     random.nextLong(0, 10000),
                     random.nextLong(0, 10000),
                     random.nextLong(0, 10000),
-                    random.nextDouble(0, 10)
-
+                    random.nextDouble(0, 10),
+                    System.currentTimeMillis()
             );
+
             tradeService.registerOrder(orderDto);
         }
     }

@@ -12,7 +12,7 @@ package org.coin.trade.dto.service;
  * @param userId
  * @param quantity
  */
-public record RegisterOrderDto(
+public record OrderDto(
         String type,
         String coinName,
         String price,
@@ -20,11 +20,11 @@ public record RegisterOrderDto(
         long walletId,
         long userId,
         double quantity,
-        double timestamp
+        long timestamp
         ) {
 
-        public static RegisterOrderDto of(String type, String coinName, double price, long orderId, long walletId, long userId, double quantity) {
-                return new RegisterOrderDto(
+        public static OrderDto of(String type, String coinName, double price, long orderId, long walletId, long userId, double quantity, long timestamp) {
+                return new OrderDto(
                         type,
                         coinName,
                         String.valueOf(price),
@@ -32,7 +32,7 @@ public record RegisterOrderDto(
                         walletId,
                         userId,
                         quantity,
-                        System.currentTimeMillis()
+                        timestamp
                 );
         }
 
@@ -42,5 +42,9 @@ public record RegisterOrderDto(
 
         public String member() {
                 return orderId + ":" + walletId + ":" + userId + ":" + quantity;
+        }
+
+        public String history() {
+                return "lock:history:" + coinName + ":" + price;
         }
 }

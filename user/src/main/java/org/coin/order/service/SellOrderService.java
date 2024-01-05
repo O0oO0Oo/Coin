@@ -12,7 +12,7 @@ import org.coin.order.dto.response.FindOrderResponse;
 import org.coin.order.entity.SellOrder;
 import org.coin.order.repository.SellOrderRepository;
 import org.coin.price.service.PriceService;
-import org.coin.trade.dto.service.RegisterOrderDto;
+import org.coin.trade.dto.service.OrderDto;
 import org.coin.trade.service.TradeService;
 import org.coin.user.entity.User;
 import org.coin.user.repository.UserRepository;
@@ -22,6 +22,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @Service
@@ -69,21 +72,26 @@ public class SellOrderService {
 
         // redis 에 등록
         tradeService.registerOrder(
-                registerOrderString(sellOrder, wallet, user, crypto)
+                createOrderDto(sellOrder, wallet, user, crypto)
         );
         return AddSellOrderResponse.of(saveOrder, crypto.getName(), savedWallet.getQuantity());
     }
 
-    private RegisterOrderDto registerOrderString(SellOrder sellOrder, Wallet wallet, User user, Crypto crypto) {
-        return RegisterOrderDto.of(
+    private OrderDto createOrderDto(SellOrder sellOrder, Wallet wallet, User user, Crypto crypto) {
+        return OrderDto.of(
                 "sell",
                 crypto.getName(),
                 sellOrder.getPrice(),
                 sellOrder.getId(),
                 wallet.getId(),
                 user.getId(),
-                sellOrder.getQuantity()
+                sellOrder.getQuantity(),
+                convertToMilliseconds(sellOrder.getCreatedTime())
         );
+    }
+
+    private long convertToMilliseconds(LocalDateTime localDateTime) {
+        return ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
     /**
@@ -187,7 +195,7 @@ public class SellOrderService {
      * 3. 지갑 조회
      * 4. 판매 주문이 삭제 가능한지 조회
      * 5. 환불
-     * 6. TODO : Trade 모듈의 Redis 에서도 삭제해야함
+     * 6. redis 삭제
      * 8. 판매 주문 엔티티 취소됨 업데이트, 저장
      * @param userId
      * @param sellOrderId
@@ -203,8 +211,9 @@ public class SellOrderService {
 
         sellOrder.setCanceled(true); // 5
 
-        // 6 redis 에서 삭제
-        
+        OrderDto orderDto = createOrderDto(sellOrder, wallet, user, sellOrder.getCrypto());
+        deregisterOrderOrElseThrow(orderDto);
+
         walletRepository.save(wallet); // 6
         sellOrderRepository.save(sellOrder);
     }
@@ -231,5 +240,12 @@ public class SellOrderService {
     private void refundCrypto(Wallet wallet, SellOrder sellOrder) {
         Double quantity = sellOrder.getQuantity();
         wallet.increaseQuantity(quantity);
+    }
+
+    private void deregisterOrderOrElseThrow(OrderDto orderDto) {
+        boolean result = tradeService.deregisterOrder(orderDto);
+        if (!result) {
+            throw new CustomException(ErrorCode.ORDER_CANT_BE_CANCELED);
+        }
     }
 }

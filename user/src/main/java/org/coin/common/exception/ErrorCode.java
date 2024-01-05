@@ -28,7 +28,9 @@ public enum ErrorCode {
     ALREADY_PROCESSED(HttpStatus.BAD_REQUEST,"O003", "이미 거래된 주문입니다. 취소할 수 없습니다."),
     ALREADY_CANCELED(HttpStatus.BAD_REQUEST,"O004", "이미 취소된 주문입니다."),
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "O002", "주문을 찾을 수 없습니다."),
-    TOTAL_ORDER_PRICE_INVALID(HttpStatus.BAD_REQUEST, "O005", "원 이상을 주문해야 합니다.")
+    TOTAL_ORDER_PRICE_INVALID(HttpStatus.BAD_REQUEST, "O005", "원 이상을 주문해야 합니다."),
+    // TODO : redis 에서 삭제를 못하면?
+    ORDER_CANT_BE_CANCELED(HttpStatus.INTERNAL_SERVER_ERROR, "O006", "주문을 취소할 수 없습니다."),
     ;
 
     private final HttpStatus httpStatus;

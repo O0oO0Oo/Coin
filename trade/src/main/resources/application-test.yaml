@@ -26,3 +26,7 @@ redis:
   slaves:
     - host: 192.168.35.247
       port: 6479
+
+logging:
+  level:
+    root: error

@@ -3,6 +3,7 @@ package org.coin.trade.pipeline.writer;
 import lombok.extern.slf4j.Slf4j;
 import org.coin.trade.pipeline.loop.AbstractAsyncLoop;
 import org.coin.trade.queue.PipelineReaderBlockingQueue;
+import org.coin.trade.redis.CustomOrderLock;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
-public class ProcessedOrderWriterAsyncLoop extends AbstractAsyncLoop<RLock, Boolean> {
+public class ProcessedOrderWriterAsyncLoop extends AbstractAsyncLoop<CustomOrderLock, Boolean> {
     private final Phaser phaser;
     private final PipelineReaderBlockingQueue pipelineReaderBlockingQueue;
     @Value("${module.trade.rate-limit}")
@@ -37,7 +38,7 @@ public class ProcessedOrderWriterAsyncLoop extends AbstractAsyncLoop<RLock, Bool
     AtomicBoolean no = new AtomicBoolean(false);
 
     @Override
-    protected Boolean processResult(RLock lock) {
+    protected Boolean processResult(CustomOrderLock lock) {
         if (Objects.isNull(lock)) {
             return Boolean.TRUE;
         }
