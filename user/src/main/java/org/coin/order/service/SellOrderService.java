@@ -12,7 +12,7 @@ import org.coin.order.dto.response.FindOrderResponse;
 import org.coin.order.entity.SellOrder;
 import org.coin.order.repository.SellOrderRepository;
 import org.coin.price.service.PriceService;
-import org.coin.trade.dto.service.RegisterOrderDto;
+import org.coin.trade.dto.service.OrderDto;
 import org.coin.trade.service.TradeService;
 import org.coin.user.entity.User;
 import org.coin.user.repository.UserRepository;
@@ -22,6 +22,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @Service
@@ -74,16 +77,21 @@ public class SellOrderService {
         return AddSellOrderResponse.of(saveOrder, crypto.getName(), savedWallet.getQuantity());
     }
 
-    private RegisterOrderDto registerOrderString(SellOrder sellOrder, Wallet wallet, User user, Crypto crypto) {
-        return RegisterOrderDto.of(
+    private OrderDto registerOrderString(SellOrder sellOrder, Wallet wallet, User user, Crypto crypto) {
+        return OrderDto.of(
                 "sell",
                 crypto.getName(),
                 sellOrder.getPrice(),
                 sellOrder.getId(),
                 wallet.getId(),
                 user.getId(),
-                sellOrder.getQuantity()
+                sellOrder.getQuantity(),
+                convertToMilliseconds(sellOrder.getCreatedTime())
         );
+    }
+
+    private long convertToMilliseconds(LocalDateTime localDateTime) {
+        return ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
     /**
@@ -203,7 +211,14 @@ public class SellOrderService {
 
         sellOrder.setCanceled(true); // 5
 
-        // 6 redis 에서 삭제
+        /**
+         * 6. 레디스 모듈 삭제
+         * order:{type}:{coin name}, {orderId}:{walletId}:{userId}:{quantity}
+         * 
+         * 비동기로 삭제했을 때 1이 나오면 저장, 0이 나오면 롤백
+         */
+        
+
         
         walletRepository.save(wallet); // 6
         sellOrderRepository.save(sellOrder);

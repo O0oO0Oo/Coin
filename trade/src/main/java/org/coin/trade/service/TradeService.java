@@ -2,7 +2,7 @@ package org.coin.trade.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.coin.trade.dto.service.RegisterOrderDto;
+import org.coin.trade.dto.service.OrderDto;
 import org.redisson.api.BatchOptions;
 import org.redisson.api.RBatch;
 import org.redisson.api.RScoredSortedSetAsync;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TradeService {
     private final RedissonClient redissonClient;
-
+    private final BatchOptions batchOptions = BatchOptions.defaults();
 
     /**
      * 주문 등록
@@ -27,9 +27,7 @@ public class TradeService {
      * ex : order:buy:btc:100000 : buyOrderId:walletId:userId:quantity
      *      order:sell:btc:100000 : sellOrderId:walletId:userId:quantity
      */
-    public boolean registerOrder(RegisterOrderDto registerOrderDto) {
-        BatchOptions batchOptions = BatchOptions.defaults();
-
+    public boolean registerOrder(OrderDto registerOrderDto) {
         RBatch batch = redissonClient.createBatch(batchOptions);
         RScoredSortedSetAsync<String> orderScoredSortedSet = batch.getScoredSortedSet(registerOrderDto.key());
         orderScoredSortedSet.addAsync(registerOrderDto.timestamp(), registerOrderDto.member());
@@ -42,11 +40,5 @@ public class TradeService {
             log.error("Add-Batch discard.");
             throw new RedisException(e);
         }
-    }
-
-    // TODO : delete 구현
-    public boolean deleteOrder() {
-
-        return true;
     }
 }
