@@ -72,18 +72,17 @@ public class SellOrderService {
 
         // redis 에 등록
         tradeService.registerOrder(
-                createOrderDto(sellOrder, wallet, user, crypto)
+                createOrderDto(sellOrder, user, crypto)
         );
         return AddSellOrderResponse.of(saveOrder, crypto.getName(), savedWallet.getQuantity());
     }
 
-    private OrderDto createOrderDto(SellOrder sellOrder, Wallet wallet, User user, Crypto crypto) {
+    private OrderDto createOrderDto(SellOrder sellOrder, User user, Crypto crypto) {
         return OrderDto.of(
                 "sell",
                 crypto.getName(),
                 sellOrder.getPrice(),
                 sellOrder.getId(),
-                wallet.getId(),
                 user.getId(),
                 sellOrder.getQuantity(),
                 convertToMilliseconds(sellOrder.getCreatedTime())
@@ -211,7 +210,7 @@ public class SellOrderService {
 
         sellOrder.setCanceled(true); // 5
 
-        OrderDto orderDto = createOrderDto(sellOrder, wallet, user, sellOrder.getCrypto());
+        OrderDto orderDto = createOrderDto(sellOrder, user, sellOrder.getCrypto());
         deregisterOrderOrElseThrow(orderDto);
 
         walletRepository.save(wallet); // 6

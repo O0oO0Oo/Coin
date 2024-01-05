@@ -6,10 +6,9 @@ package org.coin.trade.dto.service;
  * @param coinName
  * @param price
  *
- * Member = {orderId}:{walletId}:{userId}:{quantity}
+ * Member = {orderId}:{processedId}:{quantity}
  * @param orderId
- * @param walletId
- * @param userId
+ * @param mainId type 이 buy 면 walletId, sell 이면 userId 를 입력.
  * @param quantity
  */
 public record OrderDto(
@@ -17,20 +16,18 @@ public record OrderDto(
         String coinName,
         String price,
         long orderId,
-        long walletId,
-        long userId,
+        long mainId,
         double quantity,
         long timestamp
         ) {
 
-        public static OrderDto of(String type, String coinName, double price, long orderId, long walletId, long userId, double quantity, long timestamp) {
+        public static OrderDto of(String type, String coinName, double price, long orderId, long mainId, double quantity, long timestamp) {
                 return new OrderDto(
                         type,
                         coinName,
                         String.valueOf(price),
                         orderId,
-                        walletId,
-                        userId,
+                        mainId,
                         quantity,
                         timestamp
                 );
@@ -41,7 +38,7 @@ public record OrderDto(
         }
 
         public String member() {
-                return orderId + ":" + walletId + ":" + userId + ":" + quantity;
+                return orderId + ":" + mainId + ":" + quantity;
         }
 
         public String history() {

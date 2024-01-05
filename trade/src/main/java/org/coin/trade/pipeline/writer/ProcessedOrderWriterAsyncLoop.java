@@ -45,7 +45,7 @@ public class ProcessedOrderWriterAsyncLoop extends AbstractAsyncLoop<CustomOrder
 
         // 거래 완료 락 제거
         if(lock.isLocked()) {
-            log.error(lock.getName() + " is unlocked.");
+            log.info(lock.getName() + " is unlocked.");
             lock.unlock();
         }
 
