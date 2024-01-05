@@ -34,8 +34,7 @@ public class RedissonOrderReader implements ItemReader<ReadOrderDto> {
     private final RedissonClient redissonClient;
     private final PriceMessageWindowBlockingQueue priceQueue;
 
-    private final BatchOptions batchOptions = BatchOptions.defaults()
-            .retryInterval(1, TimeUnit.SECONDS);
+    private final BatchOptions batchOptions = BatchOptions.defaults();
     private final String BUY_ORDER_KEY_PREFIX = "order:buy:";
     private final String SELL_ORDER_KEY_PREFIX = "order:sell:";
 

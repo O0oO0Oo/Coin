@@ -27,12 +27,11 @@ public class ProcessedOrderWriter implements ItemWriter<ReadOrderDto>{
     private final RedissonClient redissonClient;
     private final ProcessedOrderMessageBlockingQueue processedOrderMessageBlockingQueue;
 
-    private final BatchOptions batchOptions = BatchOptions.defaults()
-            .retryInterval(1, TimeUnit.SECONDS);
+    private final BatchOptions batchOptions = BatchOptions.defaults();
 
     public Supplier<CustomOrderLock> writeSupplier() {
         return () -> {
-            ReadOrderDto consume = null;
+            ReadOrderDto consume;
 
             try {
                 consume = messageQueue.consume();
