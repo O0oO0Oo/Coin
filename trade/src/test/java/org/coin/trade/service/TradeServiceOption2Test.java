@@ -48,7 +48,7 @@ class TradeServiceOption2Test {
                 .price(2000).build();
         List<CryptoCoin> coins = List.of(coin, coin1, coin2);
 
-        OrderDto orderDto = OrderDto.of("sell", "BTC", 3000, 1, 1, 1, 100, timestamp);
+        OrderDto orderDto = OrderDto.of("sell", "BTC", 3000, 1, 1, 100, timestamp);
         tradeService.registerOrder(orderDto);
 
         // when
@@ -91,7 +91,7 @@ class TradeServiceOption2Test {
         List<CryptoCoin> coins = List.of(coin, coin1, coin2);
 
         // ex: BTC, 10시 0분 1초 당시 2000원, 가격 등록은 10시 0분 0.9초 -> 따라서 현재 처리중인 가격이므로 취소주문은 거절되어야함.
-        OrderDto orderDto = OrderDto.of("sell", "BTC", 2000, 1, 1, 1, 100, timestamp - 100);
+        OrderDto orderDto = OrderDto.of("sell", "BTC", 2000, 1, 1, 100, timestamp - 100);
         tradeService.registerOrder(orderDto);
 
         // when
