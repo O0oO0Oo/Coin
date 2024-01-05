@@ -84,7 +84,7 @@ public class BuyOrderService {
         }
 
         tradeService.registerOrder( // 6 redis 에 등록
-                createOrderDto(savedOrder, wallet, user, crypto)
+                createOrderDto(savedOrder, wallet, crypto)
         );
         return AddBuyOrderResponse.of(savedOrder, crypto.getName(), updatedUser.getMoney());
     }
@@ -93,14 +93,13 @@ public class BuyOrderService {
        return walletRepository.findByUserIdAndCryptoId(user.getId(), crypto.getId());
     }
 
-    private OrderDto createOrderDto(BuyOrder buyOrder, Wallet wallet, User user, Crypto crypto) {
+    private OrderDto createOrderDto(BuyOrder buyOrder, Wallet wallet, Crypto crypto) {
         return OrderDto.of(
                 "buy",
                 crypto.getName(),
                 buyOrder.getPrice(),
                 buyOrder.getId(),
                 wallet.getId(),
-                user.getId(),
                 buyOrder.getQuantity(),
                 convertToMilliseconds(buyOrder.getCreatedTime())
         );
@@ -240,7 +239,7 @@ public class BuyOrderService {
         
         // redis 에서 삭제
         Wallet wallet = findWalletByUserIdAndCryptoIdOrElseThrow(userId, buyOrder.getCrypto());
-        OrderDto orderDto = createOrderDto(buyOrder, wallet, user, buyOrder.getCrypto());
+        OrderDto orderDto = createOrderDto(buyOrder, wallet, buyOrder.getCrypto());
         deregisterOrderOrElseThrow(orderDto);
 
         userRepository.save(user);

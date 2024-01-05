@@ -27,12 +27,11 @@ public class ProcessedOrderWriter implements ItemWriter<ReadOrderDto>{
     private final RedissonClient redissonClient;
     private final ProcessedOrderMessageBlockingQueue processedOrderMessageBlockingQueue;
 
-    private final BatchOptions batchOptions = BatchOptions.defaults()
-            .retryInterval(1, TimeUnit.SECONDS);
+    private final BatchOptions batchOptions = BatchOptions.defaults();
 
     public Supplier<CustomOrderLock> writeSupplier() {
         return () -> {
-            ReadOrderDto consume = null;
+            ReadOrderDto consume;
 
             try {
                 consume = messageQueue.consume();
@@ -113,7 +112,7 @@ public class ProcessedOrderWriter implements ItemWriter<ReadOrderDto>{
                                 String[] split = order.split(":");
                                 long orderId = Long.parseLong(split[0]);
                                 long walletId = Long.parseLong(split[1]);
-                                double quantity = Double.parseDouble(split[3]);
+                                double quantity = Double.parseDouble(split[2]);
 
                                 buyOrderIdList.add(orderId);
                                 buyOrderMap.compute(
@@ -137,8 +136,8 @@ public class ProcessedOrderWriter implements ItemWriter<ReadOrderDto>{
                             .forEach(order -> {
                                 String[] split = order.split(":");
                                 long orderId = Long.parseLong(split[0]);
-                                long userId = Long.parseLong(split[2]);
-                                double quantity = Double.parseDouble(split[3]);
+                                long userId = Long.parseLong(split[1]);
+                                double quantity = Double.parseDouble(split[2]);
 
                                 double money = quantity * price;
 

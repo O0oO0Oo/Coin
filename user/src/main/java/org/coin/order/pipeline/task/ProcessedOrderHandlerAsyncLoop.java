@@ -1,6 +1,7 @@
 package org.coin.order.pipeline.task;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.coin.order.repository.OrderBulkUpdateRepository;
 import org.coin.trade.dto.pipeline.writer.ProcessedOrderDto;
 import org.coin.trade.dto.pipeline.writer.WriteOrderDto;
@@ -18,6 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ProcessedOrderHandlerAsyncLoop extends AbstractAsyncLoop<WriteOrderDto, Boolean> {
@@ -95,6 +97,7 @@ public class ProcessedOrderHandlerAsyncLoop extends AbstractAsyncLoop<WriteOrder
 
     @Override
     protected Void doHandlerError(Throwable throwable) {
+        log.error("An error occurred in the user pipeline - handler.", throwable);
         return null;
     }
 

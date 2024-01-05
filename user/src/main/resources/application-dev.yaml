@@ -64,6 +64,7 @@ redis:
 #    - host: localhost
 #      port: 6479
   # db server
+  number-of-slaves: 1
   master:
     host: 192.168.35.247
     port: 6379

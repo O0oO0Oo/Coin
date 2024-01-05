@@ -98,6 +98,7 @@ public class RedissonOrderReaderAsyncLoop extends AbstractAsyncLoop<ReadOrderDto
      */
     @Override
     protected Void doHandlerError(Throwable throwable) {
+        log.error("An error occurred in the trade pipeline - reader.", throwable);
         Integer retryCount = retryThreadLocal.getIfExists();
 
         if(Objects.isNull(retryCount)){
@@ -111,7 +112,7 @@ public class RedissonOrderReaderAsyncLoop extends AbstractAsyncLoop<ReadOrderDto
         if (retryCount > readerRetryLimit) {
             List<CryptoCoin> cryptoCoins = readerThreadLocal.get();
             retryThreadLocal.remove();
-            log.error("The number of retries was exceeded due to ({}) when processing {}", throwable.getMessage(), cryptoCoins);
+            log.error("The number of retries was exceeded when processing {}", cryptoCoins);
         }
 
         return null;

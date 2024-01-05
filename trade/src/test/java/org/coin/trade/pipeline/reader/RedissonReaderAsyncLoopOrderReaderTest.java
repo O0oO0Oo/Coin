@@ -50,7 +50,6 @@ class RedissonReaderAsyncLoopOrderReaderTest {
                     priceList.get(random.nextInt(0, priceList.size())),
                     random.nextLong(0, 10000),
                     random.nextLong(0, 10000),
-                    random.nextLong(0, 10000),
                     random.nextDouble(0, 10),
                     System.currentTimeMillis()
             );

@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.coin.trade.pipeline.loop.AbstractAsyncLoop;
 import org.coin.trade.queue.PipelineReaderBlockingQueue;
 import org.coin.trade.redis.CustomOrderLock;
-import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,7 +44,7 @@ public class ProcessedOrderWriterAsyncLoop extends AbstractAsyncLoop<CustomOrder
 
         // 거래 완료 락 제거
         if(lock.isLocked()) {
-            log.error(lock.getName() + " is unlocked.");
+            log.info(lock.getName() + " is unlocked.");
             lock.unlock();
         }
 
@@ -72,6 +71,7 @@ public class ProcessedOrderWriterAsyncLoop extends AbstractAsyncLoop<CustomOrder
     // TODO : 에러처리
     @Override
     protected Void doHandlerError(Throwable throwable) {
+        log.error("An error occurred in the trade pipeline - writer.", throwable);
         return null;
     }
 

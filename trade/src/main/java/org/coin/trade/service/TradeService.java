@@ -7,18 +7,29 @@ import org.coin.trade.redis.RedisScript;
 import org.redisson.api.*;
 import org.redisson.client.RedisException;
 import org.redisson.client.codec.StringCodec;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TradeService {
+    @Value("${redis.number-of-slaves}")
+    private int numberOfSlaves;
     private final RedissonClient redissonClient;
-    private final BatchOptions batchOptions = BatchOptions.defaults();
+    private final BatchOptions registerBatchOptions = BatchOptions.defaults();
+
+    // TODO : 삭제 후 반영이 안되고 reader 에서 슬레이브로부터 읽기 시작하면 삭제된 데이터를 읽어 처리할 가능성이 있다. 문서를 보면 10milli 안에 된다고 하지만 실제 배포했을때 얼마나 걸릴지는 고려해봐야한다.
+    private final BatchOptions deregisterBatchOptions = BatchOptions.defaults()
+            .sync(numberOfSlaves, Duration.ofMillis(50));
+
 
     /**
      * 주문 등록
@@ -31,7 +42,7 @@ public class TradeService {
      *      order:sell:btc:100000 : sellOrderId:walletId:userId:quantity
      */
     public boolean registerOrder(OrderDto registerOrderDto) {
-        RBatch batch = redissonClient.createBatch(batchOptions);
+        RBatch batch = redissonClient.createBatch(registerBatchOptions);
         RScoredSortedSetAsync<String> orderScoredSortedSet = batch.getScoredSortedSet(registerOrderDto.key());
         orderScoredSortedSet.addAsync(registerOrderDto.timestamp(), registerOrderDto.member());
         try {
@@ -46,7 +57,7 @@ public class TradeService {
     }
 
     public boolean deregisterOrder(OrderDto deregisterOrderDto) {
-        RBatch batch = redissonClient.createBatch(batchOptions);
+        RBatch batch = redissonClient.createBatch(deregisterBatchOptions);
         RScriptAsync script = batch.getScript(StringCodec.INSTANCE);
         CompletableFuture<Boolean> result = evalCheckLockZrem(script, deregisterOrderDto);
         try {
