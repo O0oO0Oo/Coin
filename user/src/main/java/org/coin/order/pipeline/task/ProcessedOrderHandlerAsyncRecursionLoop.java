@@ -5,12 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.coin.order.repository.OrderBulkUpdateRepository;
 import org.coin.trade.dto.pipeline.writer.ProcessedOrderDto;
 import org.coin.trade.dto.pipeline.writer.WriteOrderDto;
-import org.coin.trade.pipeline.loop.AbstractAsyncLoop;
+import org.coin.trade.pipeline.loop.AbstractAsyncRecursionLoop;
 import org.coin.user.repository.UserBulkUpdateRepository;
 import org.coin.wallet.repository.WalletBulkUpdateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,22 +23,23 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ProcessedOrderHandlerAsyncLoop extends AbstractAsyncLoop<WriteOrderDto, Boolean> {
+public class ProcessedOrderHandlerAsyncRecursionLoop extends AbstractAsyncRecursionLoop<WriteOrderDto, Boolean> {
     private OrderBulkUpdateRepository orderBulkUpdateRepository;
     private WalletBulkUpdateRepository walletBulkUpdateRepository;
     private UserBulkUpdateRepository userBulkUpdateRepository;
-    private ProcessedOrderHandlerAsyncLoop self;
+    private ProcessedOrderHandlerAsyncRecursionLoop self;
 
     @Autowired
-    public ProcessedOrderHandlerAsyncLoop(OrderBulkUpdateRepository orderBulkUpdateRepository,
-                                          @Lazy ProcessedOrderHandlerAsyncLoop self,
-                                          @Qualifier("handlerThreadPool") ExecutorService threadPool,
-                                          ProcessedOrderHandler processedOrderHandler,
-                                          WalletBulkUpdateRepository walletBulkUpdateRepository,
-                                          UserBulkUpdateRepository userBulkUpdateRepository) {
+    public ProcessedOrderHandlerAsyncRecursionLoop(OrderBulkUpdateRepository orderBulkUpdateRepository,
+                                                   @Lazy ProcessedOrderHandlerAsyncRecursionLoop self,
+                                                   @Qualifier("handlerThreadPool") Pair<ExecutorService, ExecutorService> threadPool,
+                                                   ProcessedOrderHandler processedOrderHandler,
+                                                   WalletBulkUpdateRepository walletBulkUpdateRepository,
+                                                   UserBulkUpdateRepository userBulkUpdateRepository) {
         this.orderBulkUpdateRepository = orderBulkUpdateRepository;
         this.self = self;
-        this.setThreadPool(threadPool);
+        this.setMainThreadPool(threadPool.getFirst());
+        this.setSwapThreadPool(threadPool.getSecond());
         this.setLoopSupplier(processedOrderHandler);
         this.walletBulkUpdateRepository = walletBulkUpdateRepository;
         this.userBulkUpdateRepository = userBulkUpdateRepository;

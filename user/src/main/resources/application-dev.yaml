@@ -12,8 +12,13 @@ module:
   trade:
     # read/write 작업 스레드 수
     thread-pool:
-      reader: 3
+      reader: 9
+      reader-period: 2
+      # not used
+      reader-swap: 12
+
       writer: 2
+      writer-swap: 2
     # 읽기 재시도 횟수 제한
     reader:
       retry-limit: 3
@@ -27,6 +32,11 @@ module:
     # 처리된 주문 저장 작업 스레드 수
     thread-pool:
       handler: 1
+      handler-swap: 1
+
+  # 스택 트레이스 사이즈 제한.
+  thread-pool:
+    stack-trace-size: 3
 
 server:
   port: 8080
@@ -66,10 +76,10 @@ redis:
   # db server
   number-of-slaves: 1
   master:
-    host: 192.168.35.247
+    host: 192.168.35.47
     port: 6379
   slaves:
-    - host: 192.168.35.247
+    - host: 192.168.35.47
       port: 6479
 
 # logging

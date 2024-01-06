@@ -4,7 +4,7 @@ import io.netty.util.concurrent.FastThreadLocal;
 import lombok.extern.slf4j.Slf4j;
 import org.coin.price.dto.CryptoCoin;
 import org.coin.trade.dto.pipeline.reader.ReadOrderDto;
-import org.coin.trade.pipeline.loop.AbstractAsyncLoop;
+import org.coin.trade.pipeline.loop.AbstractAsyncScheduledLoop;
 import org.coin.trade.queue.PipelineReaderBlockingQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,12 +14,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Phaser;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 @Slf4j
 @Component
-public class RedissonOrderReaderAsyncLoop extends AbstractAsyncLoop<ReadOrderDto, Boolean> {
+public class RedissonOrderReaderAsyncScheduledLoop extends AbstractAsyncScheduledLoop<ReadOrderDto, Boolean> {
     private final FastThreadLocal<List<CryptoCoin>> readerThreadLocal;
     private final Phaser phaser;
     private final PipelineReaderBlockingQueue messageQueue;
@@ -30,14 +30,14 @@ public class RedissonOrderReaderAsyncLoop extends AbstractAsyncLoop<ReadOrderDto
     private int rateLimit;
 
     @Autowired
-    public RedissonOrderReaderAsyncLoop(@Qualifier("readerFastThreadLocal") FastThreadLocal<List<CryptoCoin>> readerThreadLocal,
-                                        @Qualifier("pipelineSynchronizer") Phaser phaser,
-                                        @Qualifier("readerThreadPool") ExecutorService threadPool,
-                                        RedissonOrderReader reader,
-                                        PipelineReaderBlockingQueue blockingQueue) {
+    public RedissonOrderReaderAsyncScheduledLoop(@Qualifier("readerFastThreadLocal") FastThreadLocal<List<CryptoCoin>> readerThreadLocal,
+                                                 @Qualifier("pipelineSynchronizer") Phaser phaser,
+                                                 @Qualifier("readerScheduledThreadPool") ScheduledThreadPoolExecutor threadPool,
+                                                 RedissonOrderReader reader,
+                                                 PipelineReaderBlockingQueue blockingQueue) {
         this.readerThreadLocal = readerThreadLocal;
         this.phaser = phaser;
-        this.setThreadPool(threadPool);
+        this.setScheduledThreadPool(threadPool);
         this.setLoopSupplier(reader.getReadSupplier());
         this.messageQueue = blockingQueue;
     }

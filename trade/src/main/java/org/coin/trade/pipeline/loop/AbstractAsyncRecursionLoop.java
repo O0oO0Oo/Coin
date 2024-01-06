@@ -1,10 +1,14 @@
 package org.coin.trade.pipeline.loop;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -22,9 +26,16 @@ import java.util.function.Supplier;
  * @param <O> 이전의 결과를 바탕으로 동시성을 조정할 데이터의 타입
  */
 @Slf4j
-public abstract class AbstractAsyncLoop<I, O> implements AsyncLoop {
-    private ExecutorService threadPool;
+public abstract class AbstractAsyncRecursionLoop<I, O> implements AsyncLoop {
+    private ExecutorService mainThreadPool;
+    private ExecutorService swapThreadPool;
     private Supplier<I> loopSupplier;
+
+    private final AtomicBoolean atomicChanger = new AtomicBoolean();
+    private final Map<Boolean, ExecutorService> threadPoolMap = new HashMap<>();
+
+    @Value("${module.thread-pool.stack-trace-size}")
+    private int stackTraceSize;
 
     /**
      * loopSupplier 로부터 읽어온 결과 처리
@@ -39,7 +50,7 @@ public abstract class AbstractAsyncLoop<I, O> implements AsyncLoop {
     protected abstract CompletableFuture<Void> doConcurrencyLevelControl(O result);
     private CompletableFuture<Void> concurrencyLevelControl(O result){
         CompletableFuture<Void> voidCompletableFuture = doConcurrencyLevelControl(result);
-        asyncLoop();
+        checkStackTraceThenSwapThreadPool();
         return voidCompletableFuture;
     }
 
@@ -63,16 +74,30 @@ public abstract class AbstractAsyncLoop<I, O> implements AsyncLoop {
                 stopAsyncLoop();
             }
             else {
-                asyncLoop();
+                checkStackTraceThenSwapThreadPool();
             }
         }
     }
+
+    /**
+     * Stack Trace 사이즈 체크, 사이즈가 stackTraceSize 넘어가면 다른 스레드풀로 넘기기.
+     */
+    private void checkStackTraceThenSwapThreadPool() {
+        if (Thread.currentThread().getStackTrace().length < stackTraceSize) {
+            asyncLoop();
+        } else {
+            CompletableFuture.runAsync(this::asyncLoop, threadPoolMap.get(atomicChanger.getAndSet(!atomicChanger.get())));
+        }
+    }
+
 
     /**
      * @param count 시작 루프의 수를 결정
      */
     @Override
     public void runAsyncLoop(int count) {
+        threadPoolMap.put(Boolean.TRUE, mainThreadPool);
+        threadPoolMap.put(Boolean.FALSE, swapThreadPool);
         for (int i = 0; i < count; i++) {
             asyncLoop();
         }
@@ -80,7 +105,7 @@ public abstract class AbstractAsyncLoop<I, O> implements AsyncLoop {
 
     private void asyncLoop() {
         CompletableFuture<I> cf = CompletableFuture.supplyAsync(
-                loopSupplier, threadPool
+                loopSupplier, mainThreadPool
         );
 
         cf
@@ -96,19 +121,23 @@ public abstract class AbstractAsyncLoop<I, O> implements AsyncLoop {
     @Override
     public void stopAsyncLoop() {
         log.info("ThreadPool shutdown.");
-        threadPool.shutdown();
+        mainThreadPool.shutdown();
         try {
-            if (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
-                threadPool.shutdownNow();
+            if (!mainThreadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+                mainThreadPool.shutdownNow();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            threadPool.shutdownNow();
+            mainThreadPool.shutdownNow();
         }
     }
 
-    protected void setThreadPool(ExecutorService threadPool) {
-        this.threadPool = threadPool;
+    public void setSwapThreadPool(ExecutorService swapThreadPool) {
+        this.swapThreadPool = swapThreadPool;
+    }
+
+    protected void setMainThreadPool(ExecutorService mainThreadPool) {
+        this.mainThreadPool = mainThreadPool;
     }
 
     protected void setLoopSupplier(Supplier<I> loopSupplier) {

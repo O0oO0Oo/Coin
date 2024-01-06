@@ -10,14 +10,12 @@ import org.coin.trade.queue.ProcessedOrderMessageBlockingQueue;
 import org.coin.trade.redis.CustomOrderLock;
 import org.redisson.api.BatchOptions;
 import org.redisson.api.RBatch;
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.RedisException;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Component

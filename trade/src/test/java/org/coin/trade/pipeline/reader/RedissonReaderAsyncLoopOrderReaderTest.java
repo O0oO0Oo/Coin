@@ -7,14 +7,18 @@ import org.coin.trade.service.TradeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.redisson.api.*;
+import org.redisson.api.BatchOptions;
+import org.redisson.api.RBatch;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -62,7 +66,7 @@ class RedissonReaderAsyncLoopOrderReaderTest {
      * TODO : VisualVM 으로 관찰
      */
     @Test
-    @DisplayName("RedissonOrderReaderAsyncLoop - CompletableFuture loop - test")
+    @DisplayName("RedissonOrderReaderAsyncRecursionLoop - CompletableFuture loop - test")
     void asyncLoopTest() throws InterruptedException {
         // given
         String keyName = "order:buy:btc:";
@@ -131,7 +135,6 @@ class RedissonReaderAsyncLoopOrderReaderTest {
                     List<String> strings = completableFutures.stream()
                             .map(CompletableFuture::join)
                             .toList();
-                    System.out.println("\"all\" = " + "all");
                 } catch (RuntimeException e) {
                     throw new RuntimeException(e);
                 }
