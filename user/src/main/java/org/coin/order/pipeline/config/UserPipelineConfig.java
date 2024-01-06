@@ -13,7 +13,7 @@ public class UserPipelineConfig {
     @Value("${module.user.thread-pool.handler}")
     private int handlerThreadN;
 
-    @Value("${module.user.thread-pool.handle-swap}")
+    @Value("${module.user.thread-pool.handler-swap}")
     private int handlerSwapThreadN;
 
     @Bean("handlerThreadPool")
