@@ -1,12 +1,12 @@
 package org.coin.trade.pipeline.writer;
 
 import lombok.extern.slf4j.Slf4j;
-import org.coin.trade.pipeline.loop.AbstractAsyncLoop;
-import org.coin.trade.queue.PipelineReaderBlockingQueue;
+import org.coin.trade.pipeline.loop.AbstractAsyncRecursionLoop;
 import org.coin.trade.redis.CustomOrderLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -17,21 +17,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
-public class ProcessedOrderWriterAsyncLoop extends AbstractAsyncLoop<CustomOrderLock, Boolean> {
+public class ProcessedOrderWriterAsyncRecursionLoop extends AbstractAsyncRecursionLoop<CustomOrderLock, Boolean> {
     private final Phaser phaser;
-    private final PipelineReaderBlockingQueue pipelineReaderBlockingQueue;
     @Value("${module.trade.rate-limit}")
     private int rateLimit;
 
     @Autowired
-    public ProcessedOrderWriterAsyncLoop(@Qualifier("pipelineSynchronizer") Phaser phaser,
-                                         @Qualifier("writerThreadPool")ExecutorService threadPool,
-                                         ProcessedOrderWriter writer,
-                                         PipelineReaderBlockingQueue pipelineReaderBlockingQueue){
+    public ProcessedOrderWriterAsyncRecursionLoop(@Qualifier("pipelineSynchronizer") Phaser phaser,
+                                                  @Qualifier("writerThreadPool") Pair<ExecutorService, ExecutorService> threadPool,
+                                                  ProcessedOrderWriter writer){
         this.phaser = phaser;
-        this.setThreadPool(threadPool);
+        this.setMainThreadPool(threadPool.getFirst());
+        this.setSwapThreadPool(threadPool.getSecond());
         this.setLoopSupplier(writer.writeSupplier());
-        this.pipelineReaderBlockingQueue = pipelineReaderBlockingQueue;
     }
 
     AtomicBoolean no = new AtomicBoolean(false);
