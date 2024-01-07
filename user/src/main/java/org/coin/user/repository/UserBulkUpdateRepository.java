@@ -2,7 +2,7 @@ package org.coin.user.repository;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.coin.trade.dto.pipeline.writer.ProcessedOrderDto;
+import org.coin.trade.dto.pipeline.async.writer.ProcessedOrderDto;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
