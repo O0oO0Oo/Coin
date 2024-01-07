@@ -16,9 +16,7 @@ import org.redisson.client.RedisException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -47,30 +45,17 @@ public class ReadRedissonOrderScript implements Script<List<CryptoCoin>> {
 
             // Redisson 데이터 읽기
             ReadOrderDto readOrderDto = readOrders(prices);
-            String name = readOrderDto.lock().getName();
-            if (name.equals("BTC")) {
-                log.error("BTC");
-            }
 
-            // TODO : 비어있다면 발행하지 말야아하지만 논블로킹으로 고민, 테스트를위해 0만 받아옴
-            readOrderDto.orderSortedSetDtoListCFList().get(0).join();
-            if (!readOrderDto.orderSortedSetDtoListCFList().get(0).get().orders().isEmpty()) {
-                // 쓰기 이벤트 발행
-                writerEventQueue.add(new WriterEvent(readOrderDto));
-            }
-            else {
-                readOrderDto.lock().unlock();
-            }
+            // TODO : 블로킹 후 락을 해제할 것인지 아니면? 아래에 비동기 코드 추가,
+
+            // 쓰기 이벤트 발행
+            writerEventQueue.add(new WriterEvent(readOrderDto));
 
             onSuccess.accept(prices);
         } catch (RuntimeException e) {
             // 실패시 다시 이벤트 발행.
             readerEventQueue.add(new ReadRedissonOrderEvent(prices));
             onFailure.accept(e, prices);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 

@@ -13,6 +13,7 @@ public class ReadRedissonOrderEvent extends AbstractEvent<List<CryptoCoin>> {
         super(data);
     }
 
+    // TODO 성공 실패 후, 어떤 작업을 해야할것인지.
     @Override
     public void trigger(Script script) {
         script.run(data,
