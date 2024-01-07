@@ -1,7 +1,7 @@
 package org.coin.order.pipeline.task;
 
 import lombok.RequiredArgsConstructor;
-import org.coin.trade.dto.pipeline.writer.WriteOrderDto;
+import org.coin.trade.dto.pipeline.async.writer.WriteOrderDto;
 import org.coin.trade.queue.ProcessedOrderMessageBlockingQueue;
 import org.springframework.stereotype.Component;
 
