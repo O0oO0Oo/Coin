@@ -7,7 +7,7 @@ import org.coin.price.dto.CryptoCoin;
 import org.coin.price.queue.PriceMessageWindowBlockingQueue;
 import org.coin.trade.dto.pipeline.async.reader.OrderSortedSetDto;
 import org.coin.trade.dto.pipeline.async.reader.ReadOrderDto;
-import org.coin.trade.redis.CustomOrderLock;
+import org.coin.trade.pipeline.asyncloop.redis.CustomOrderLock;
 import org.redisson.api.BatchOptions;
 import org.redisson.api.RBatch;
 import org.redisson.api.RedissonClient;
@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * 1. 읽기 실패, 재시도 로직
  */
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 public class RedissonOrderReader implements ItemReader<ReadOrderDto> {
     @Qualifier("readerFastThreadLocal")

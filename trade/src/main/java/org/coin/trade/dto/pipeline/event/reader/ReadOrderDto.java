@@ -1,16 +1,14 @@
 package org.coin.trade.dto.pipeline.event.reader;
 
-import org.coin.trade.dto.pipeline.async.reader.OrderSortedSetDto;
-import org.coin.trade.redis.CustomOrderLock;
+import org.coin.trade.pipeline.eventloop.redis.OrderLock;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public record ReadOrderDto(
-        CustomOrderLock lock,
-        List<CompletableFuture<OrderSortedSetDto>> orderSortedSetDtoListCFList
+        OrderLock lock,
+        List<OrderSortedSetDto> orderSortedSetDtoList
 ) {
-    public static ReadOrderDto of(CustomOrderLock lock, List<CompletableFuture<OrderSortedSetDto>> orderSortedSetDtoListCFList){
-        return new ReadOrderDto(lock, orderSortedSetDtoListCFList);
+    public static ReadOrderDto of(OrderLock orders, List<OrderSortedSetDto> orderSortedSetDtoList) {
+        return new ReadOrderDto(orders, orderSortedSetDtoList);
     }
 }

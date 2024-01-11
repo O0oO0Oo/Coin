@@ -42,6 +42,6 @@ public record OrderDto(
         }
 
         public String history() {
-                return "lock:history:" + coinName + ":" + price;
+                return "history:lock:order:" + coinName + ":" + price;
         }
 }

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.coin.price.dto.CryptoCoin;
 import org.coin.trade.dto.pipeline.async.reader.ReadOrderDto;
 import org.coin.trade.pipeline.asyncloop.loop.AbstractAsyncScheduledLoop;
-import org.coin.trade.queue.PipelineReaderBlockingQueue;
+import org.coin.trade.pipeline.asyncloop.queue.PipelineReaderBlockingQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +18,7 @@ import java.util.concurrent.Phaser;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 @Slf4j
-@Component
+//@Component
 public class RedissonOrderReaderAsyncScheduledLoop extends AbstractAsyncScheduledLoop<ReadOrderDto, Boolean> {
     private final FastThreadLocal<List<CryptoCoin>> readerThreadLocal;
     private final Phaser phaser;
