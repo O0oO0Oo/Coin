@@ -6,7 +6,7 @@
 ## 아키텍처
 초기 구성은 다음과 같이 계획하였지만, 테스트 후에 변경할 예정입니다.
 
-<img src="https://github.com/O0oO0Oo/Coin/assets/110446760/659c74bc-0e7e-4e40-8226-2c54e71c30ca" width="550">
+<img src="https://github.com/O0oO0Oo/Coin/assets/110446760/659c74bc-0e7e-4e40-8226-2c54e71c30ca" width="700">
 
 ### 중요 요구사항
 - (Price Module) 최소 1초에 4번 모든 코인의 가격을 받아와야 한다.
@@ -24,17 +24,17 @@
 ### Trade Module
 Price 모듈로부터 받아온 가격정보와 매치되는 주문들을 검색하여 거래하는 모듈입니다.
 
-구현이 끝났었지만 문제가 발생하여 현재 개선중입니다. 
+이벤트 루프 구조를 모방하여 만들었으며, Redis 에서 ```비동기```로 데이터를 받아와 성공/실패에 따라 이벤트를 발행하고 큐에 저장하게 됩니다.
 
-<img src="https://github.com/O0oO0Oo/Coin/assets/110446760/523c1bf3-8d03-4c2f-8e6f-83a3105cba70" width="550">
+<img src="https://github.com/O0oO0Oo/Coin/assets/110446760/d4fb48fe-8adb-4c20-975a-71990ef645f0" width="900">
 
 ### User Module
 Price, Trade 모듈을 통해 주문등록, 아래와 같이 처리된 주문의 저장 그리고 전반적인 유저의 요청들을 처리합니다.
 
-<img src="https://github.com/O0oO0Oo/Coin/assets/110446760/4377a455-4a24-42ce-9dd7-1cbb568d0820" width="550">
+<img src="https://github.com/O0oO0Oo/Coin/assets/110446760/9f3f6b12-6aa5-4867-aa2b-3480bbdd8ef0" width="550">
 
 ### Issue
-1. 루프 구조 문제점. [Issue-26](https://github.com/O0oO0Oo/Coin/issues/26)
+1. 처음 계획했던 루프 구조 문제점 문제해결 과정 : [Issue-26](https://github.com/O0oO0Oo/Coin/issues/26)
    
 ### ERD
 - crypto : 코인 종류
