@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.coin.price.dto.CryptoCoin;
 import org.coin.trade.dto.pipeline.async.reader.ReadOrderDto;
 import org.coin.trade.pipeline.asyncloop.loop.AbstractAsyncRecursionLoop;
-import org.coin.trade.queue.PipelineReaderBlockingQueue;
+import org.coin.trade.pipeline.asyncloop.queue.PipelineReaderBlockingQueue;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;

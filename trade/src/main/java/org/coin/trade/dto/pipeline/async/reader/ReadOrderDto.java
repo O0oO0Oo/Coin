@@ -1,6 +1,6 @@
 package org.coin.trade.dto.pipeline.async.reader;
 
-import org.coin.trade.redis.CustomOrderLock;
+import org.coin.trade.pipeline.asyncloop.redis.CustomOrderLock;
 
 import java.util.List;
 

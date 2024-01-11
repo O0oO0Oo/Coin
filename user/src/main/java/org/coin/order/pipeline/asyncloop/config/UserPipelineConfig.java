@@ -1,4 +1,4 @@
-package org.coin.order.pipeline.config;
+package org.coin.order.pipeline.asyncloop.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +8,7 @@ import org.springframework.data.util.Pair;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Configuration
+//@Configuration
 public class UserPipelineConfig {
     @Value("${module.user.thread-pool.handler}")
     private int handlerThreadN;

@@ -1,4 +1,4 @@
-package org.coin.order.pipeline.task;
+package org.coin.order.pipeline.asyncloop.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 public class ProcessedOrderHandlerAsyncRecursionLoop extends AbstractAsyncRecursionLoop<WriteOrderDto, Boolean> {
     private OrderBulkUpdateRepository orderBulkUpdateRepository;

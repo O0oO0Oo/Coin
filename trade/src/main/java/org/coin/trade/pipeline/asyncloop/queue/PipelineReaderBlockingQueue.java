@@ -1,13 +1,12 @@
-package org.coin.trade.queue;
+package org.coin.trade.pipeline.asyncloop.queue;
 
 import org.coin.price.queue.MessageQueue;
 import org.coin.trade.dto.pipeline.async.reader.ReadOrderDto;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@Component
+//@Component
 public class PipelineReaderBlockingQueue implements MessageQueue<ReadOrderDto, ReadOrderDto> {
     private final BlockingQueue<ReadOrderDto> blockingQueue = new LinkedBlockingQueue<>();
 

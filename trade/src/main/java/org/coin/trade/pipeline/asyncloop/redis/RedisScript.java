@@ -1,4 +1,4 @@
-package org.coin.trade.redis;
+package org.coin.trade.pipeline.asyncloop.redis;
 
 public class RedisScript {
     public static final String LOCK_WRITE_HISTORY = "" + //

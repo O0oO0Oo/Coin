@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-@Configuration
+//@Configuration
 public class TradePipelineConfig {
 
     @Value("${module.trade.thread-pool.reader}")

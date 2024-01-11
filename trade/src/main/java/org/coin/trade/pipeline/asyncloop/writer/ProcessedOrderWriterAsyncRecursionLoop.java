@@ -2,7 +2,7 @@ package org.coin.trade.pipeline.asyncloop.writer;
 
 import lombok.extern.slf4j.Slf4j;
 import org.coin.trade.pipeline.asyncloop.loop.AbstractAsyncRecursionLoop;
-import org.coin.trade.redis.CustomOrderLock;
+import org.coin.trade.pipeline.asyncloop.redis.CustomOrderLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +16,7 @@ import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-@Component
+//@Component
 public class ProcessedOrderWriterAsyncRecursionLoop extends AbstractAsyncRecursionLoop<CustomOrderLock, Boolean> {
     private final Phaser phaser;
     @Value("${module.trade.rate-limit}")

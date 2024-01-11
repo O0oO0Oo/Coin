@@ -1,4 +1,4 @@
-package org.coin.trade.pipeline.reader;
+package org.coin.trade.pipeline.asyncloop.reader;
 
 import org.coin.price.queue.PriceMessageWindowBlockingQueue;
 import org.coin.trade.config.RedissonWriteToMasterReadFromReplicaConfiguration;

@@ -6,8 +6,8 @@ import org.coin.trade.dto.pipeline.async.reader.OrderSortedSetDto;
 import org.coin.trade.dto.pipeline.async.reader.ReadOrderDto;
 import org.coin.trade.dto.pipeline.async.writer.ProcessedOrderDto;
 import org.coin.trade.dto.pipeline.async.writer.WriteOrderDto;
-import org.coin.trade.queue.ProcessedOrderMessageBlockingQueue;
-import org.coin.trade.redis.CustomOrderLock;
+import org.coin.trade.pipeline.asyncloop.queue.ProcessedOrderMessageBlockingQueue;
+import org.coin.trade.pipeline.asyncloop.redis.CustomOrderLock;
 import org.redisson.api.BatchOptions;
 import org.redisson.api.RBatch;
 import org.redisson.api.RedissonClient;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.function.Supplier;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 public class ProcessedOrderWriter implements ItemWriter<ReadOrderDto>{
     private final MessageQueue<ReadOrderDto, ReadOrderDto> messageQueue;
