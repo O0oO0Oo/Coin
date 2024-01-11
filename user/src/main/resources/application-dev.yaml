@@ -10,33 +10,13 @@ module:
     price-window-size: 10
 
   trade:
-    # read/write 작업 스레드 수
-    thread-pool:
-      reader: 9
-      reader-period: 2
-      # not used
-      reader-swap: 12
-
-      writer: 2
-      writer-swap: 2
-    # 읽기 재시도 횟수 제한
     reader:
-      retry-limit: 3
-    # read : num++ , write : num--
-    # num = rate-limit, num 을 넘기는 스레드는 잠시 작업을 멈추게 됨.
-    rate-limit: 30
+      # 가격 제공 주기, 2ms 면 2ms 마다, 하나의 코인 주문이 처리된다.
+      period: 2
 
   user:
     # 최소 주문 가능 금액
     minimum-order-price: 1000.0
-    # 처리된 주문 저장 작업 스레드 수
-    thread-pool:
-      handler: 1
-      handler-swap: 1
-
-  # 스택 트레이스 사이즈 제한.
-  thread-pool:
-    stack-trace-size: 3
 
 server:
   port: 8080

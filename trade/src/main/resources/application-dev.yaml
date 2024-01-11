@@ -1,29 +1,45 @@
 # SPRING_PROFILES_ACTIVE=dev
+
+# 모듈 설정
 module:
   price:
     url: https://api.bithumb.com/public/ticker/ALL
     rps: 4
     max-failures: 10
     initial-queue-size: 100
-    price-window-size: 5
+    price-window-size: 10
 
   trade:
-    thread-pool:
-      reader: 3
-      writer: 2
-    # 읽기 재시도 횟수 제한
     reader:
-      retry-limit: 3
-    rate-limit: 20
+      # 가격 제공 주기, 2ms 면 2ms 마다, 하나의 코인 주문이 처리된다.
+      period: 2
+
+  user:
+    # 최소 주문 가능 금액
+    minimum-order-price: 1000.0
 
 server:
-  port: 8086
+  port: 8080
 
+# redis
 redis:
+  # local
+#  master:
+#      host: localhost
+#      port: 6379
+#  slaves:
+#    - host: localhost
+#      port: 6479
+  # db server
   number-of-slaves: 1
   master:
-    host: 192.168.35.247
+    host: 192.168.35.47
     port: 6379
   slaves:
-    - host: 192.168.35.247
+    - host: 192.168.35.47
       port: 6479
+
+# logging
+logging:
+  level:
+    root: error

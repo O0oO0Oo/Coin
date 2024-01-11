@@ -3,7 +3,7 @@ package org.coin.trade.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.coin.trade.dto.service.OrderDto;
-import org.coin.trade.redis.RedisScript;
+import org.coin.trade.pipeline.eventloop.redis.TradeLua;
 import org.redisson.api.*;
 import org.redisson.client.RedisException;
 import org.redisson.client.codec.StringCodec;
@@ -11,11 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -35,11 +33,11 @@ public class TradeService {
      * 주문 등록
      * SortedSet
      * key = order:{type}:{coin name}:{price}
-     * member = {orderId}:{walletId}:{userId}:{quantity}
+     * member = {orderId}:{walletId/userId}:{quantity}
      * score = timestamp
      * <p>
-     * ex : order:buy:btc:100000 : buyOrderId:walletId:userId:quantity
-     *      order:sell:btc:100000 : sellOrderId:walletId:userId:quantity
+     * ex : order:buy:btc:100000 : buyOrderId:walletId:quantity
+     *      order:sell:btc:100000 : sellOrderId:userId:quantity
      */
     public boolean registerOrder(OrderDto registerOrderDto) {
         RBatch batch = redissonClient.createBatch(registerBatchOptions);
@@ -73,7 +71,7 @@ public class TradeService {
 
     private CompletableFuture<Boolean> evalCheckLockZrem(RScriptAsync script, OrderDto deregisterOrderDto) {
         List<Object> keys = new ArrayList<>();
-        keys.add("lock:" + deregisterOrderDto.coinName());
+        keys.add("lock:order:" + deregisterOrderDto.coinName() + ":" + deregisterOrderDto.price());
         keys.add(deregisterOrderDto.history());
         keys.add(deregisterOrderDto.key());
 
@@ -81,7 +79,7 @@ public class TradeService {
         values.add(String.valueOf(deregisterOrderDto.timestamp()));
         values.add(deregisterOrderDto.member());
 
-        return script.evalAsync(RScript.Mode.READ_WRITE, RedisScript.CHECK_LOCK_ZREM, RScript.ReturnType.BOOLEAN, keys, values.toArray(new Object[0]))
+        return script.evalAsync(RScript.Mode.READ_WRITE, TradeLua.DEREGISTER_ORDER, RScript.ReturnType.BOOLEAN, keys, values.toArray(new Object[0]))
                 .toCompletableFuture()
                 .thenApply(result -> {
                     if (result instanceof Boolean res) {
