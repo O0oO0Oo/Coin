@@ -17,7 +17,7 @@
 ### Price Module
 가격 정보를 받아오는 모듈입니다.
 
-현재 구현이 완료되었으며, ```@Scheduled```, ```@Async``` 를 사용하여 구현하였습니다.
+```@Scheduled```, ```@Async``` 를 사용하여 요구사항에 맞게 구현하였습니다.
 
 <img src="https://github.com/O0oO0Oo/Coin/assets/110446760/89d51550-b664-402f-98e6-8187369c0463" width="550">
 
