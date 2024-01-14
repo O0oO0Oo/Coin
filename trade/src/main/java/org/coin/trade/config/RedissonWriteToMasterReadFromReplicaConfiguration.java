@@ -32,7 +32,7 @@ public class RedissonWriteToMasterReadFromReplicaConfiguration {
         config.setCodec(StringCodec.INSTANCE);
         config.useMasterSlaveServers()
                 .setMasterAddress(master.toString())
-                .setReadMode(ReadMode.SLAVE)
+                .setReadMode(ReadMode.MASTER)
                 .setLoadBalancer(new RoundRobinLoadBalancer());
 
         slaves
