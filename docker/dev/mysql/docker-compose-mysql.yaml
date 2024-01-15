@@ -1,0 +1,55 @@
+# MySQL Replication
+version: '3.8'
+services:
+  mysql-master:
+    image: mysql:latest
+    hostname: mysql-master
+    environment:
+      - MYSQL_ROOT_PASSWORD=master
+      - MYSQL_USER=master
+      - MYSQL_DATABASE=crypto
+      - MYSQL_PASSWORD=master
+    command:
+      --server-id=1
+      --log-bin=binlog
+      --gtid-mode=ON
+      --enforce-gtid-consistency=ON
+      --log_slave_updates=ON
+    volumes:
+      - mysql_master:/var/lib/mysql
+      - ./mysql_master_init.sql:/docker-entrypoint-initdb.d/mysql-master-init.sql
+    ports:
+      - '3306:3306'
+    networks:
+      - mysql_network
+
+  mysql-replica:
+    image: mysql:latest
+    hostname: mysql-replica
+    environment:
+      - MYSQL_ROOT_PASSWORD=replica
+      - MYSQL_USER=slave
+      - MYSQL_DATABASE=crypto
+      - MYSQL_PASSWORD=slave
+    volumes:
+      - mysql_replica:/var/lib/mysql
+      - ./mysql_replica_init.sql:/docker-entrypoint-initdb.d/mysql-replica-init.sql
+    ports:
+      - '3406:3306'
+    command:
+      --server-id=2
+      --log-bin=binlog
+      --gtid-mode=ON
+      --enforce-gtid-consistency=ON
+      --log_slave_updates=ON
+    depends_on:
+      - mysql-master
+    networks:
+      - mysql_network
+
+networks:
+  mysql_network:
+
+volumes:
+  mysql_master:
+  mysql_replica:

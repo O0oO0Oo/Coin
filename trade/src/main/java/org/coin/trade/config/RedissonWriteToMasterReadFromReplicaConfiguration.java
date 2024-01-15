@@ -4,7 +4,6 @@ import lombok.Data;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.StringCodec;
-import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.redisson.config.ReadMode;
 import org.redisson.connection.balancer.RoundRobinLoadBalancer;
@@ -34,7 +33,6 @@ public class RedissonWriteToMasterReadFromReplicaConfiguration {
                 .setMasterAddress(master.toString())
                 .setReadMode(ReadMode.MASTER)
                 .setLoadBalancer(new RoundRobinLoadBalancer());
-
         slaves
                 .forEach(slave -> config.useMasterSlaveServers()
                         .addSlaveAddress(slave.toString()));
