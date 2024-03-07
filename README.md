@@ -1,7 +1,8 @@
-# Coin
-비트코인 프로젝트 리팩토링
+# Coin - 비트코인 프로젝트 리팩토링
 
-[자세한 내용 노션 링크](https://sungwon9.notion.site/Coin-8724855a1d8a45a38b4d693734be0144?pvs=4)
+### [Project Description(KR) - Notion](https://sungwon9.notion.site/Coin-492dbb5222ef45c293c80e839038eb03?pvs=4)
+
+### [Project Description(EN) - Notion](https://sungwon9.notion.site/Coin-EN-Crypto-Currency-Simulated-Investment-79c0cc0a739b48ef9fa1a18abc816bb4?pvs=4)
 
 ## 아키텍처
 초기 구성은 다음과 같이 계획하였지만, 테스트 후에 변경할 예정입니다.
@@ -41,4 +42,5 @@ Price, Trade 모듈을 통해 주문등록, 아래와 같이 처리된 주문의
 - wallet : 유저 보유 코인지갑
 - sell/buy_order : 유저의 판매/구매
 - user : 사용자
+
 <img src="https://github.com/O0oO0Oo/Coin/assets/110446760/74aa375c-abba-4342-adcc-e407e391e169" width="550">
