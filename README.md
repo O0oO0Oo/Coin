@@ -2,7 +2,8 @@
 
 ### [Project Description(KR) - Notion](https://sungwon9.notion.site/Coin-492dbb5222ef45c293c80e839038eb03?pvs=4)
 
-### [Project Description(EN) - Notion](https://sungwon9.notion.site/Coin-EN-Crypto-Currency-Simulated-Investment-79c0cc0a739b48ef9fa1a18abc816bb4?pvs=4)
+### [Project Description(JP) - Notion](https://sungwon9.notion.site/Coin-1d13bf731a4b80f5bcc9ea0002a6fea7?pvs=4)
+
 
 ## 아키텍처
 초기 구성은 다음과 같이 계획하였지만, 테스트 후에 변경할 예정입니다.
